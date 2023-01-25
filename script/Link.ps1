@@ -1,65 +1,122 @@
 function Get-MarkdownLink {
     Param(
-        [Object[]]
-        $Directory
+        [Parameter(ValueFromPipeline = $true)]
+        $Directory,
+
+        [Switch]
+        $TestWebLink
     )
 
-    function Get-CaptureGroup {
-        Param(
-            [Object[]]
-            $MatchInfo,
+    Begin {
+        function Test-WebRequest {
+            Param(
+                [String]
+                $Uri
+            )
 
-            [String]
-            $GroupName
-        )
+            $HTTP_Response = $null
+            $HTTP_Request = [System.Net.WebRequest]::Create($Uri)
+            $HTTP_Response = $HTTP_Request.GetResponse()
 
-        foreach ($item in $MatchInfo) {
-            $path = $item.Path
+            if ($null -eq $HTTP_Response) {
+                return $null
+            }
 
-            foreach ($capture in $item.Matches) {
-                $value = $capture.Groups[$GroupName].Value
+            $HTTP_Status = [int]$HTTP_Response.StatusCode
+            $HTTP_Response.Close()
+            return 200 -eq $HTTP_Status
+        }
 
-                if ([String]::IsNullOrWhiteSpace($value)) {
-                    continue
-                }
+        function Get-CaptureGroup {
+            Param(
+                [Object[]]
+                $MatchInfo,
 
-                $type = ''
+                [String]
+                $GroupName,
 
-                switch -Regex ($value) {
-                    '^\.\.?(\\|\/)' {
-                        $type = 'Relative'
-                        $parent = Split-Path $path -Parent
-                        $path = Join-Path $parent $value
+                [Switch]
+                $Web
+            )
+
+            foreach ($item in $MatchInfo) {
+                $linkPath = $item.Path
+
+                foreach ($capture in $item.Matches) {
+                    $value = $capture.Groups[$GroupName].Value
+
+                    if ([String]::IsNullOrWhiteSpace($value)) {
+                        continue
                     }
 
-                    default {
-                        $type = 'Absolute'
+                    $type = ''
+
+                    switch -Regex ($value) {
+                        '^\.\.?(\\|\/)' {
+                            $type = 'Relative'
+                            $parent = Split-Path $linkPath -Parent
+                            $linkPath = Join-Path $parent $value
+                        }
+
+                        default {
+                            $type = 'Absolute'
+                            $linkPath = $value
+                        }
                     }
-                }
 
-                $found = Test-Path $path
+                    $found = if ($Web) {
+                        Test-WebRequest -Uri $linkPath
+                    } else {
+                        Test-Path $linkPath
+                    }
 
-                [PsCustomObject]@{
-                    Capture = $value
-                    Type = $type
-                    Found = $found
-                    Path = $path
+                    [PsCustomObject]@{
+                        Capture = $value
+                        Type = $type
+                        Found = $found
+                        LinkPath = $linkPath
+                        FilePath = $item.Path
+                    }
                 }
             }
         }
+
+        $webPattern = "https?://[^\s`"]+"
+        $linkPattern = "\[[^\[\]]*\]\s*\()[^\(\)]+(?=\))"
+        $referencePattern = "(?<=$linkPattern"
+        $imagePattern = "(?<=!$linkPattern"
+        $searchPattern =
+            "(?<web>$webPattern)|(?<image>$imagePattern)|(?<reference>$referencePattern)"
+        $list = @()
     }
 
-    $webPattern = "https?://[^\s`"]+"
-    $linkPattern = "\[[^\[\]]*\]\s*\()[^\(\)]+(?=\))"
-    $referencePattern = "(?<=$linkPattern"
-    $imagePattern = "(?<=!$linkPattern"
+    Process {
+        $what = $Directory `
+            | sls $searchPattern
 
-    $what = $Directory `
-        | sls "(?<web>$webPattern)|(?<image>$imagePattern)|(?<reference>$referencePattern)"
+        if ($null -eq $what) {
+            return
+        }
 
-    return [PsCustomObject]@{
-        Web = Get-CaptureGroup $what -GroupName 'web'
-        Reference = Get-CaptureGroup $what -GroupName 'reference'
-        Image = Get-CaptureGroup $what -GroupName 'image'
+        $web = Get-CaptureGroup $what -GroupName 'web' -Web:$TestWebLink
+
+        foreach ($item in $web) {
+            $item.Type = 'Web'
+        }
+
+        $list += @([PsCustomObject]@{
+            Web = $web
+            Reference = Get-CaptureGroup $what -GroupName 'reference'
+            Image = Get-CaptureGroup $what -GroupName 'image'
+        })
+    }
+
+    End {
+        return [PsCustomObject]@{
+            Web = $list.Web
+            Reference = $list.Reference
+            Image = $list.Image
+        }
     }
 }
+

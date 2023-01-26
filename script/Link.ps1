@@ -27,44 +27,62 @@ function Get-MarkdownLink {
             return 200 -eq $HTTP_Status
         }
 
+        function Get-CaptureGroupName {
+            Param(
+                [Object[]]
+                $MatchInfo
+            )
+
+            $groups = $MatchInfo.Groups `
+                | where {
+                    $_.Success `
+                    -and $_.Length -gt 0 `
+                    -and $_.Name -notmatch "\d+"
+                }
+
+            return $groups.Name
+        }
+
         function Get-CaptureGroup {
             Param(
                 [Object[]]
                 $MatchInfo,
 
-                [String]
-                $GroupName,
-
                 [Switch]
-                $Web
+                $TestWebLink
             )
 
             foreach ($item in $MatchInfo) {
                 $linkPath = $item.Path
 
                 foreach ($capture in $item.Matches) {
-                    $value = $capture.Groups[$GroupName].Value
+                    $groupName = Get-CaptureGroupName $capture
+                    $value = $capture.Groups[$groupName].Value
+
+                    if (@($groupName).Count -gt 0) {
+                        $groupName = @($groupName)[0]
+                    }
 
                     if ([String]::IsNullOrWhiteSpace($value)) {
                         continue
                     }
 
-                    $type = ''
+                    $searchMethod = ''
 
                     switch -Regex ($value) {
                         '^\.\.?(\\|\/)' {
-                            $type = 'Relative'
+                            $searchMethod = 'Relative'
                             $parent = Split-Path $linkPath -Parent
                             $linkPath = Join-Path $parent $value
                         }
 
                         default {
-                            $type = 'Absolute'
+                            $searchMethod = 'Absolute'
                             $linkPath = $value
                         }
                     }
 
-                    $found = if ($Web) {
+                    $found = if ($TestWebLink -and $groupName -eq 'Web') {
                         Test-WebRequest -Uri $linkPath
                     } else {
                         Test-Path $linkPath
@@ -72,7 +90,8 @@ function Get-MarkdownLink {
 
                     [PsCustomObject]@{
                         Capture = $value
-                        Type = $type
+                        Type = $groupName
+                        SearchMethod = $searchMethod
                         Found = $found
                         LinkPath = $linkPath
                         FilePath = $item.Path
@@ -86,8 +105,7 @@ function Get-MarkdownLink {
         $referencePattern = "(?<=$linkPattern"
         $imagePattern = "(?<=!$linkPattern"
         $searchPattern =
-            "(?<web>$webPattern)|(?<image>$imagePattern)|(?<reference>$referencePattern)"
-        $list = @()
+            "(?<Web>$webPattern)|(?<Image>$imagePattern)|(?<Reference>$referencePattern)"
     }
 
     Process {
@@ -98,25 +116,14 @@ function Get-MarkdownLink {
             return
         }
 
-        $web = Get-CaptureGroup $what -GroupName 'web' -Web:$TestWebLink
+        $items = Get-CaptureGroup $what `
+            -TestWebLink:$TestWebLink
 
-        foreach ($item in $web) {
-            $item.Type = 'Web'
+        foreach ($item in $items) {
+            $item.Type = 'Uri'
         }
 
-        $list += @([PsCustomObject]@{
-            Web = $web
-            Reference = Get-CaptureGroup $what -GroupName 'reference'
-            Image = Get-CaptureGroup $what -GroupName 'image'
-        })
-    }
-
-    End {
-        return [PsCustomObject]@{
-            Web = $list.Web
-            Reference = $list.Reference
-            Image = $list.Image
-        }
+        return $items
     }
 }
 

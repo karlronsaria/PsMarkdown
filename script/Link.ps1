@@ -4,7 +4,10 @@ function Get-MarkdownLink {
         $Directory,
 
         [Switch]
-        $TestWebLink
+        $TestWebLink,
+
+        [Switch]
+        $PassThru
     )
 
     Begin {
@@ -49,7 +52,10 @@ function Get-MarkdownLink {
                 $MatchInfo,
 
                 [Switch]
-                $TestWebLink
+                $TestWebLink,
+
+                [Switch]
+                $PassThru
             )
 
             foreach ($item in $MatchInfo) {
@@ -88,7 +94,7 @@ function Get-MarkdownLink {
                         Test-Path $linkPath
                     }
 
-                    [PsCustomObject]@{
+                    $obj = [PsCustomObject]@{
                         Capture = $value
                         Type = $groupName
                         SearchMethod = $searchMethod
@@ -96,6 +102,15 @@ function Get-MarkdownLink {
                         LinkPath = $linkPath
                         FilePath = $item.Path
                     }
+
+                    if ($PassThru) {
+                        $obj | Add-Member `
+                            -MemberType 'NoteProperty' `
+                            -Name 'MatchInfo' `
+                            -Value $item
+                    }
+
+                    return $obj
                 }
             }
         }
@@ -117,13 +132,124 @@ function Get-MarkdownLink {
         }
 
         $items = Get-CaptureGroup $what `
-            -TestWebLink:$TestWebLink
+            -TestWebLink:$TestWebLink `
+            -PassThru:$PassThru
 
         foreach ($item in $items) {
             $item.Type = 'Uri'
         }
 
         return $items
+    }
+}
+
+function ConvertTo-MarkdownLinkSearchMethod {
+    Param(
+        [Parameter(
+            ParameterSetName = 'ByCustomObject',
+            ValueFromPipeline = $true
+        )]
+        [PsCustomObject]
+        $InputObject,
+
+        [Parameter(
+            ParameterSetName = 'ByTwoStrings'
+        )]
+        [String]
+        $OriginPath,
+
+        [Parameter(
+            ParameterSetName = 'ByTwoStrings'
+        )]
+        [String]
+        $DestinationPath,
+
+        [ValidateSet('Absolute', 'Relative')]
+        [String]
+        $SearchMethod = 'Relative'
+    )
+
+    Begin {
+        function Get-CommonPrefix {
+            Param(
+                [String]
+                $InputString,
+
+                [String]
+                $ReferenceString
+            )
+
+            $iEnum = $InputString.GetEnumerator()
+            $rEnum = $ReferenceString.GetEnumerator()
+            $prefix = ''
+
+            while ($iEnum.MoveNext() -and $rEnum.MoveNext()) {
+                if ($iEnum.Current -ne $rEnum.Current) {
+                    break
+                }
+
+                $prefix += $iEnum.Current
+            }
+
+            $iTail = $iEnum.Current
+
+            while ($iEnum.MoveNext()) {
+                $iTail += $iEnum.Current
+            }
+
+            $rTail = $rEnum.Current
+
+            while ($rEnum.MoveNext()) {
+                $rTail += $rEnum.Current
+            }
+
+            return [PsCustomObject]@{
+                Prefix = $prefix
+                InputTail = $iTail
+                ReferenceTail = $rTail
+            }
+        }
+    }
+
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'ByCustomObject' {
+                $OriginPath = $InputObject.FilePath
+                $DestinationPath = $InputObject.LinkPath
+            }
+        }
+
+        $dir = dir $OriginPath -ErrorAction 'SilentlyContinue'
+
+        if ($null -ne $dir -and $dir.Mode -match '^-a') {
+            $OriginPath = Split-Path $OriginPath -Parent
+        }
+
+        $OriginPath = $OriginPath.Replace('\', '/')
+        $DestinationPath = $DestinationPath.Replace('\', '/')
+
+        $what = Get-CommonPrefix `
+            -InputString $OriginPath `
+            -ReferenceString $DestinationPath
+
+        switch ($SearchMethod) {
+            'Relative' {
+                $nodes = $what.InputTail.Trim('/').Split('/').Count
+                $fullPath = "."
+
+                foreach ($node in (1 .. $nodes)) {
+                    Write-Host $node
+                    $fullPath = Join-Path $fullPath '..'
+                }
+
+                $fullPath = Join-Path $fullPath $what.ReferenceTail
+                return $fullPath
+            }
+
+            'Absolute' {
+                # todo
+            }
+        }
     }
 }
 

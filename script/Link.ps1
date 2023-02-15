@@ -124,6 +124,10 @@ function Get-MarkdownLink {
     }
 
     Process {
+        if ($Directory -is [String]) {
+            $Directory = Get-ChildItem $Directory
+        }
+
         $what = $Directory `
             | sls $searchPattern
 

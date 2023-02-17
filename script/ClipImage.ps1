@@ -3,7 +3,7 @@ function Save-ClipboardToImageFormat {
     [CmdletBinding()]
     Param(
         [String]
-        $BasePath = (Get-Location),
+        $BasePath = (Get-Location).Path,
 
         [String]
         $FolderName = "res",
@@ -21,11 +21,20 @@ function Save-ClipboardToImageFormat {
         MarkdownString = ""
     }
 
+    $format = 'None'
     $clip = Get-Clipboard -Format Image
+
+    if ($clip -eq $null) {
+        $clip = Get-Clipboard -Format FileDropList
+    } else {
+        $format = 'Image'
+    }
 
     if ($clip -eq $null) {
         Write-Error "No image found on Clipboard."
         return $obj
+    } else {
+        $format = 'FileDropList'
     }
 
     $BasePath = Join-Path $BasePath $FolderName
@@ -39,8 +48,24 @@ function Save-ClipboardToImageFormat {
         }
     }
 
-    $item_name = Join-Path $BasePath "$FileName$FileExtension"
-    $clip.Save($item_name)
+    $item_name = ""
+
+    switch ($format) {
+        'Image' {
+            $base_name = "$FileName$FileExtension"
+            $item_name = Join-Path $BasePath $base_name
+            $clip.Save($item_name)
+            $link_name = $FileName
+        }
+
+        'FileDropList' {
+            $item = $clip[0]
+            $base_name = $item.Name
+            $item_name = Join-Path $BasePath $base_name
+            [void] $item.CopyTo($item_name, $true)
+            $link_name = $base_name
+        }
+    }
 
     if (-not (Test-Path $item_name)) {
         Write-Error "Failed to save image to '$item_name'."
@@ -49,12 +74,12 @@ function Save-ClipboardToImageFormat {
 
     # 2021_11_25: This new line necessary for rendering with typora-0.11.18
     $item_path = Join-Path "." $FolderName
-    $item_path = Join-Path $item_path "$FileName$FileExtension"
+    $item_path = Join-Path $item_path $base_name
 
     return [PsCustomObject]@{
         Success = $true
         Path = $item_name
-        MarkdownString = "![$FileName](/$($item_path.Replace('\', '/')))"
+        MarkdownString = "![$link_name]($($item_path.Replace('\', '/')))"
     }
 }
 

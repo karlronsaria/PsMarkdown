@@ -12,29 +12,40 @@ function Save-ClipboardToImageFormat {
         $FileName = (Get-Date -Format "yyyy_MM_dd_HHmmss"),
 
         [String]
-        $FileExtension = ".png"
+        $FileExtension = ".png",
+
+        [Switch]
+        $Force
     )
+
+    $format = "None"
 
     $obj = [PsCustomObject]@{
         Success = $false
         Path = ""
         MarkdownString = ""
+        Format = $format
     }
 
-    $format = 'None'
     $clip = Get-Clipboard -Format Image
 
     if ($clip -eq $null) {
         $clip = Get-Clipboard -Format FileDropList
     } else {
-        $format = 'Image'
+        $format = "Image"
     }
 
     if ($clip -eq $null) {
-        Write-Error "No image found on Clipboard."
+        $clip = Get-Clipboard -Format Text
+    } else {
+        $format = "FileDropList"
+    }
+
+    if ($clip -eq $null) {
+        Write-Error "No image found on Clipboard"
         return $obj
     } else {
-        $format = 'FileDropList'
+        $format = "Text"
     }
 
     $BasePath = Join-Path $BasePath $FolderName
@@ -43,7 +54,7 @@ function Save-ClipboardToImageFormat {
         New-Item -Path $BasePath -ItemType Directory | Out-Null
 
         if (-not (Test-Path $BasePath)) {
-            Write-Error "Failed to find/create subdirectory '$FolderName'."
+            Write-Error "Failed to find/create subdirectory '$FolderName'"
             return $obj
         }
     }
@@ -51,24 +62,36 @@ function Save-ClipboardToImageFormat {
     $item_name = ""
 
     switch ($format) {
-        'Image' {
+        "Image" {
             $base_name = "$FileName$FileExtension"
             $item_name = Join-Path $BasePath $base_name
             $clip.Save($item_name)
             $link_name = $FileName
         }
 
-        'FileDropList' {
+        "FileDropList" {
             $item = $clip[0]
             $base_name = $item.Name
             $item_name = Join-Path $BasePath $base_name
-            [void] $item.CopyTo($item_name, $true)
+            [void] $item.CopyTo($item_name, $Force)
+            $link_name = $base_name
+        }
+
+        "Text" {
+            if (-not (Test-Path $clip)) {
+                Write-Error "No file found at $clip"
+                return $obj
+            }
+
+            $base_name = Split-Path $item.Name -Leaf
+            $item_name = Join-Path $BasePath $base_name
+            Copy-Item $clip $item_name -Force:$Force
             $link_name = $base_name
         }
     }
 
     if (-not (Test-Path $item_name)) {
-        Write-Error "Failed to save image to '$item_name'."
+        Write-Error "Failed to save image to '$item_name'"
         return $obj
     }
 
@@ -80,6 +103,7 @@ function Save-ClipboardToImageFormat {
         Success = $true
         Path = $item_name
         MarkdownString = "![$link_name]($($item_path.Replace('\', '/')))"
+        Format = $format
     }
 }
 
@@ -89,7 +113,7 @@ function Move-ToTrashFolder {
         $Path,
 
         [String]
-        $TrashFolder = '__OLD'
+        $TrashFolder = "__OLD"
     )
 
     $Path = Join-Path (Get-Location) $Path

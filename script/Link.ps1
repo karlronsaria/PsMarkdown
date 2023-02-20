@@ -247,9 +247,18 @@ function ConvertTo-MarkdownLinkSearchMethod {
             }
 
             'Absolute' {
-                # todo
+                return Join-Path $OriginPath $DestinationPath
             }
         }
     }
+}
+
+function Move-MarkdownItem {
+    Param(
+        [Parameter(ValueFromPipeline = $true)]
+        $Source,
+
+        $Destination
+    )
 }
 

@@ -179,43 +179,46 @@ function ConvertTo-MarkdownLinkSearchMethod {
                 $ReferenceString
             )
 
-            $iEnum = $InputString.GetEnumerator()
-            $rEnum = $ReferenceString.GetEnumerator()
-            $prefix = ''
+            $iList = $InputString.Replace('\', '/').Split('/')
+            $rList = $ReferenceString.Replace('\', '/').Split('/')
+            $iEnum = 0
+            $rEnum = 0
+            $prefix = @()
 
-            while ($iEnum.MoveNext() -and $rEnum.MoveNext()) {
-                if ($iEnum.Current -ne $rEnum.Current) {
+            while ($iEnum -lt $iList.Count -and $rEnum -lt $rList.Count) {
+                if ($iList[$iEnum] -ne $rList[$rEnum]) {
                     break
                 }
 
-                $prefix += $iEnum.Current
+                $prefix += @($iList[$iEnum])
+                $iEnum++
+                $rEnum++
             }
 
-            $iTail = $iEnum.Current
+            $iTail = @()
 
-            while ($iEnum.MoveNext()) {
-                $iTail += $iEnum.Current
+            while ($iEnum -lt $iList.Count) {
+                $iTail += @($iList[$iEnum])
+                $iEnum++
             }
 
-            $rTail = if (([String]$iTail).Length -gt 0) {
-                $rEnum.Current
-            } else {
-                ""
-            }
+            $rTail = @()
 
-            while ($rEnum.MoveNext()) {
-                $rTail += $rEnum.Current
+            while ($rEnum -lt $rList.Count) {
+                $rTail += @($rList[$rEnum])
+                $rEnum++
             }
 
             return [PsCustomObject]@{
-                Prefix = $prefix
-                InputTail = $iTail
-                ReferenceTail = $rTail
+                Prefix = $prefix -Join '/'
+                InputTail = $iTail -Join '/'
+                ReferenceTail = $rTail -Join '/'
             }
         }
 
         function Format-Link {
             Param(
+                [Parameter(ValueFromPipeline = $true)]
                 [String]
                 $Link
             )
@@ -237,11 +240,6 @@ function ConvertTo-MarkdownLinkSearchMethod {
         }
 
         $dir = dir $OriginPath -ErrorAction 'SilentlyContinue'
-
-        if ($null -ne $dir -and $dir.Mode -match '^-a') {
-            $OriginPath = Split-Path $OriginPath -Parent
-        }
-
         $OriginPath = $OriginPath.Replace('\', '/')
         $DestinationPath = $DestinationPath.Replace('\', '/')
 
@@ -270,116 +268,294 @@ function ConvertTo-MarkdownLinkSearchMethod {
             }
 
             'Absolute' {
-                return Format-Link ( `
-                    Join-Path $OriginPath $what.ReferenceTail `
-                )
+                if ($null -ne $dir -and $dir.Mode -match '^-a') {
+                    $OriginPath = Split-Path $OriginPath -Parent
+                }
+
+                $originList =
+                    $OriginPath.Replace('\', '/').Split('/')
+
+                $refTailList =
+                    $what.ReferenceTail.Replace('\', '/').Split('/')
+
+                if ($refTailList[0] -eq '.') {
+                    $refTailList = $refTailList[1 .. ($refTailList.Count - 1)]
+                }
+
+                while ($refTailList[0] -eq '..' `
+                    -and $originList.Count -gt 0)
+                {
+                    $refTailList = if ($refTailList.Count -eq 1) {
+                        @()
+                    } else {
+                        $refTailList[1 .. ($refTailList.Count - 1)]
+                    }
+
+                    $originList = if ($originList.Count -eq 1) {
+                        @()
+                    } else {
+                        $originList[0 .. ($originList.Count - 2)]
+                    }
+                }
+
+                return Join-Path `
+                    ($originList -Join '/') `
+                    ($refTailList -Join '/') `
+                    | Format-Link
             }
         }
     }
 }
 
-function Get-MarkdownItemMovedContent {
+function Move-MarkdownItem {
     Param(
-        [Parameter(ValueFromPipeline = $true)]
+        [String]
         $Source,
 
+        [String]
         $Destination,
+
+        [Switch]
+        $Force,
 
         $Notebook
     )
 
-    Process {
-        if ($Source -is [String]) {
-            $Source = Get-ChildItem $Source
-        }
+    function Get-MarkdownLocalResource {
+        Param(
+            [Alias('Path')]
+            [String]
+            $ItemPath
+        )
 
-        foreach ($item in $Source) {
-            $links = $item | Get-MarkdownLink -PassThru | where {
-                $_.Type -eq 'Reference'
-            } | where {
-                $_.SearchMethod -eq 'Relative'
-            }
+        $pattern = "!\[[^\[\]]+\]\((?<Resource>[^\(\)]+)\)"
+        $dir = (Get-Item $ItemPath).Directory
 
-            $cat = $Source | Get-Content
+        foreach ($line in (cat $ItemPath)) {
+            $capture = [Regex]::Match($line, $pattern)
 
-            foreach ($link in $links) {
-                $capture = $link.MatchInfo.Matches[0].Groups[$link.Type]
+            if ($capture.Success) {
+                $value = $capture.Groups['Resource'].Value
+                $resourcePath = Join-Path $dir $value
+                $exists = Test-Path $resourcePath
 
-                if ($link.Type -eq 'Web') {
-                    continue
+                [PsCustomObject]@{
+                    String = $value
+                    Path = $resourcePath
+                    Exists = $exists
+                    FileInfo = if ($exists) {
+                        Get-Item $resourcePath
+                    } else {
+                        $null
+                    }
                 }
+            }
+        }
+    }
 
-                $newLink = ConvertTo-MarkdownLinkSearchMethod `
-                    -OriginPath $link.FilePath `
-                    -DestinationPath $link.Capture `
-                    -SearchMethod Absolute
+    function Get-MarkdownItemMovedContent {
+        Param(
+            [Parameter(ValueFromPipeline = $true)]
+            $Source,
 
-                $newLink = ConvertTo-MarkdownLinkSearchMethod `
-                    -OriginPath $Destination `
-                    -DestinationPath $newLink `
-                    -SearchMethod Relative
+            $Destination,
 
-                $matchInfo = $link.MatchInfo
+            $Notebook
+        )
 
-                $cat[$matchInfo.LineNumber - 1] =
-                    $matchInfo.Line.Substring(0, $capture.Index) `
-                        + $newLink `
-                        + $matchInfo.Line.Substring( `
-                            $capture.Index + $capture.Length `
-                        )
+        Process {
+            if ($Source -is [String]) {
+                $Source = Get-ChildItem $Source
             }
 
-            $moveItem = [PsCustomObject]@{
-                Path = $Destination
-                Content = $cat
-                BackReferences = @()
-            }
-
-            $grep = dir $Notebook -Recurse `
-                | Get-MarkdownLink -PassThru | where {
+            foreach ($item in $Source) {
+                $links = $item | Get-MarkdownLink -PassThru | where {
                     $_.Type -eq 'Reference'
                 } | where {
                     $_.SearchMethod -eq 'Relative'
-                } | where {
-                    $_.Capture -match (Split-Path $Source -Leaf)
                 }
 
-            $cats = @{}
+                $cat = $Source | Get-Content
 
-            foreach ($item in $grep) {
-                if ($null -eq $cats[$item.FilePath]) {
-                    $cats[$item.FilePath] = cat $item.FilePath
+                if ((Get-Item $Destination).Mode -like "d*") {
+                    $Destination =
+                        Join-Path $Destination (Split-Path $Source -Leaf)
                 }
 
-                $matchInfo = $item.MatchInfo
-                $capture = $matchInfo.Matches[0]
+                foreach ($link in $links) {
+                    $capture = $link.MatchInfo.Matches[0].Groups[$link.Type]
 
-                $newLink = ConvertTo-MarkdownLinkSearchMethod `
-                    -OriginPath $item.FilePath `
-                    -DestinationPath $capture.Value `
-                    -SearchMethod Absolute
+                    if ($link.Type -eq 'Web') {
+                        continue
+                    }
 
-                $newLink = ConvertTo-MarkdownLinkSearchMethod `
-                    -OriginPath $item.FilePath `
-                    -DestinationPath $newLink `
-                    -SearchMethod Relative
+                    $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                        -OriginPath $link.FilePath `
+                        -DestinationPath $link.Capture `
+                        -SearchMethod Absolute
 
-                $cats[$matchInfo.Path][$matchInfo.LineNumber - 1] =
-                    $matchInfo.Line.Substring(0, $capture.Index) `
-                        + $newLink `
-                        + $matchInfo.Line.Substring( `
-                            $capture.Index + $capture.Length `
-                        )
+                    $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                        -OriginPath $Destination `
+                        -DestinationPath $newLink `
+                        -SearchMethod Relative
+
+                    $matchInfo = $link.MatchInfo
+
+                    $newLine =
+                        $matchInfo.Line.Substring(0, $capture.Index) `
+                            + $newLink `
+                            + $matchInfo.Line.Substring( `
+                                $capture.Index + $capture.Length `
+                            )
+
+                    $cat[$matchInfo.LineNumber - 1] = $newLine
+                }
+
+                $moveItem = [PsCustomObject]@{
+                    Path = $Destination
+                    Content = $cat
+                    BackReferences = @()
+                    ChangeLinks = @(
+                        [PsCustomObject]@{
+                            'FilePath' = $Destination
+                            'LineNumber' = $matchInfo.LineNumber
+                            'Old' = $matchInfo.Line
+                            'New' = $newLine
+                        }
+                    )
+                }
+
+                $grep = dir $Notebook -Recurse `
+                    | Get-MarkdownLink -PassThru | where {
+                        $_.Type -eq 'Reference'
+                    } | where {
+                        $_.SearchMethod -eq 'Relative'
+                    } | where {
+                        $_.Capture -match (Split-Path $Source -Leaf)
+                    }
+
+                $cats = @{}
+
+                foreach ($item in $grep) {
+                    if ($null -eq $cats[$item.FilePath]) {
+                        $cats[$item.FilePath] = cat $item.FilePath
+                    }
+
+                    $matchInfo = $item.MatchInfo
+                    $capture = $matchInfo.Matches[0]
+
+                    $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                        -OriginPath $item.FilePath `
+                        -DestinationPath $capture.Value `
+                        -SearchMethod Absolute
+
+                    $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                        -OriginPath $item.FilePath `
+                        -DestinationPath $Destination `
+                        -SearchMethod Relative
+
+                    $newLine =
+                        $matchInfo.Line.Substring(0, $capture.Index) `
+                            + $newLink `
+                            + $matchInfo.Line.Substring( `
+                                $capture.Index + $capture.Length `
+                            )
+
+                    $cats[$matchInfo.Path][$matchInfo.LineNumber - 1] =
+                        $newLine
+                }
+
+                $moveItem.BackReferences = $cats.Keys | sort | foreach {
+                    [PsCustomObject]@{
+                        Path = $_
+                        Content = $cats[$_]
+                    }
+                }
+
+                $moveItem.ChangeLinks += @(
+                    [PsCustomObject]@{
+                        'FilePath' = $item.FilePath
+                        'LineNumber' = $matchInfo.LineNumber
+                        'Old' = $matchInfo.Line
+                        'New' = $newLine
+                    }
+                )
+
+                return $moveItem
             }
+        }
+    }
 
-            $moveItem.BackReferences = $cats.Keys | sort | foreach {
-                [PsCustomObject]@{
-                    Path = $_
-                    Content = $cats[$_]
+    if (-not $Notebook) {
+        $settingFile = "$PsScriptRoot/../res/setting.json"
+
+        if ((Test-Path $settingFile)) {
+            $Notebook = (cat $settingFile | ConvertFrom-Json).Notebook
+        }
+    }
+
+    $dir = (Get-Item $Source).Directory
+
+    $resource = Get-MarkdownLocalResource `
+        -ItemPath $Source
+
+    $moveLinkInfo = @()
+
+    if ($Notebook) {
+        $moveLinkInfo = Get-MarkdownItemMovedContent `
+            -Source $Source `
+            -Destination $Destination `
+            -Notebook $Notebook
+    }
+
+    foreach ($subitem in $resource) {
+        $resourceDest = Join-Path $Destination $subitem.String
+        $parentPath = Split-Path $subitem.String
+        $resourceParentDest = Join-Path $Destination $parentPath
+
+        if (-not (Test-Path $resourceParentDest)) {
+            New-Item `
+                -Path $resourceParentDest `
+                -ItemType Directory `
+                -Force:$Force
+        }
+
+        Move-Item `
+            -Path $subitem.Path `
+            -Destination $resourceDest `
+            -Force:$Force
+    }
+
+    Move-Item `
+        -Path $Source `
+        -Destination $Destination `
+        -Force:$Force
+
+    if ((Get-Item $Destination).Mode -like "d*") {
+        $Destination = Join-Path $Destination (Split-Path $Source -Leaf)
+    }
+
+    if ($Notebook) {
+        $moveLinkInfo.Content | Out-File $Destination -Force
+
+        if (diff ($moveLinkInfo.Content) (cat $Destination)) {
+            Write-Warning "Failed to write file $($Destination)"
+        }
+        else {
+            Write-Output $moveLinkInfo.ChangeLinks[0]
+        }
+
+        foreach ($backRef in $moveLinkInfo.BackReferences) {
+            $backRef.Content | Out-File $backRef.Path -Force
+
+            if (diff ($backRef.Content) (cat $backRef.Path)) {
+                Write-Warning "Failed to write file $($backRef.Path)"
+            }
+            else {
+                Write-Output $moveLinkInfo.ChangeLinks | where {
+                    $_.FilePath -eq $backRef.Path
                 }
             }
-
-            return $moveItem
         }
     }
 }

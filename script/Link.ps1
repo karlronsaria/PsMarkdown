@@ -110,7 +110,7 @@ function Get-MarkdownLink {
                             -Value $item
                     }
 
-                    return $obj
+                    Write-Output $obj
                 }
             }
         }
@@ -197,7 +197,11 @@ function ConvertTo-MarkdownLinkSearchMethod {
                 $iTail += $iEnum.Current
             }
 
-            $rTail = $rEnum.Current
+            $rTail = if (([String]$iTail).Length -gt 0) {
+                $rEnum.Current
+            } else {
+                ""
+            }
 
             while ($rEnum.MoveNext()) {
                 $rTail += $rEnum.Current
@@ -208,6 +212,19 @@ function ConvertTo-MarkdownLinkSearchMethod {
                 InputTail = $iTail
                 ReferenceTail = $rTail
             }
+        }
+
+        function Format-Link {
+            Param(
+                [String]
+                $Link
+            )
+
+            $Link = $Link.Trim()
+            $Link = $Link.Replace('\', '/')
+            $Link = $Link -Replace '^\./\.\./', '../'
+            $Link = $Link -Replace '(?<=.+/)\./', ''
+            return $Link
         }
     }
 
@@ -234,31 +251,135 @@ function ConvertTo-MarkdownLinkSearchMethod {
 
         switch ($SearchMethod) {
             'Relative' {
-                $nodes = $what.InputTail.Trim('/').Split('/').Count
-                $fullPath = "."
+                $nodes = if ([String]::IsNullOrWhiteSpace($what.InputTail)) {
+                    0
+                } else {
+                    ([String] $what.InputTail).Trim('/').Split('/').Count
+                }
 
-                foreach ($node in (1 .. $nodes)) {
-                    Write-Host $node
+                $fullPath = "."
+                $node = 1
+
+                while ($node -lt $nodes) {
                     $fullPath = Join-Path $fullPath '..'
+                    $node = $node + 1
                 }
 
                 $fullPath = Join-Path $fullPath $what.ReferenceTail
-                return $fullPath
+                return Format-Link $fullPath
             }
 
             'Absolute' {
-                return Join-Path $OriginPath $DestinationPath
+                return Format-Link ( `
+                    Join-Path $OriginPath $what.ReferenceTail `
+                )
             }
         }
     }
 }
 
-function Move-MarkdownItem {
+function Get-MarkdownItemMovedContent {
     Param(
         [Parameter(ValueFromPipeline = $true)]
         $Source,
 
-        $Destination
-    )
-}
+        $Destination,
 
+        $Notebook
+    )
+
+    Process {
+        if ($Source -is [String]) {
+            $Source = Get-ChildItem $Source
+        }
+
+        foreach ($item in $Source) {
+            $links = $item | Get-MarkdownLink -PassThru | where {
+                $_.Type -eq 'Reference'
+            } | where {
+                $_.SearchMethod -eq 'Relative'
+            }
+
+            $cat = $Source | Get-Content
+
+            foreach ($link in $links) {
+                $capture = $link.MatchInfo.Matches[0].Groups[$link.Type]
+
+                if ($link.Type -eq 'Web') {
+                    continue
+                }
+
+                $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                    -OriginPath $link.FilePath `
+                    -DestinationPath $link.Capture `
+                    -SearchMethod Absolute
+
+                $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                    -OriginPath $Destination `
+                    -DestinationPath $newLink `
+                    -SearchMethod Relative
+
+                $matchInfo = $link.MatchInfo
+
+                $cat[$matchInfo.LineNumber - 1] =
+                    $matchInfo.Line.Substring(0, $capture.Index) `
+                        + $newLink `
+                        + $matchInfo.Line.Substring( `
+                            $capture.Index + $capture.Length `
+                        )
+            }
+
+            $moveItem = [PsCustomObject]@{
+                Path = $Destination
+                Content = $cat
+                BackReferences = @()
+            }
+
+            $grep = dir $Notebook -Recurse `
+                | Get-MarkdownLink -PassThru | where {
+                    $_.Type -eq 'Reference'
+                } | where {
+                    $_.SearchMethod -eq 'Relative'
+                } | where {
+                    $_.Capture -match (Split-Path $Source -Leaf)
+                }
+
+            $cats = @{}
+
+            foreach ($item in $grep) {
+                if ($null -eq $cats[$item.FilePath]) {
+                    $cats[$item.FilePath] = cat $item.FilePath
+                }
+
+                $matchInfo = $item.MatchInfo
+                $capture = $matchInfo.Matches[0]
+
+                $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                    -OriginPath $item.FilePath `
+                    -DestinationPath $capture.Value `
+                    -SearchMethod Absolute
+
+                $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                    -OriginPath $item.FilePath `
+                    -DestinationPath $newLink `
+                    -SearchMethod Relative
+
+                $cats[$matchInfo.Path][$matchInfo.LineNumber - 1] =
+                    $matchInfo.Line.Substring(0, $capture.Index) `
+                        + $newLink `
+                        + $matchInfo.Line.Substring( `
+                            $capture.Index + $capture.Length `
+                        )
+            }
+
+            $moveItem.BackReferences = $cats.Keys | sort | foreach {
+                [PsCustomObject]@{
+                    Path = $_
+                    Content = $cats[$_]
+                }
+            }
+
+            return $moveItem
+        }
+    }
+}

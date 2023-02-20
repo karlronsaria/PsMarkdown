@@ -139,10 +139,6 @@ function Get-MarkdownLink {
             -TestWebLink:$TestWebLink `
             -PassThru:$PassThru
 
-        foreach ($item in $items) {
-            $item.Type = 'Uri'
-        }
-
         return $items
     }
 }

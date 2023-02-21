@@ -1,0 +1,186 @@
+﻿{
+    "Tree":  [
+                 "C:\\note\\test\\PsMarkdown\\master.md",
+                 "C:\\note\\test\\PsMarkdown\\TestA\\sus.md",
+                 "C:\\note\\test\\PsMarkdown\\TestB\\Test01\\ihr.md",
+                 "C:\\note\\test\\PsMarkdown\\TestD\\Test01\\oth.md"
+             ],
+    "Content":  [
+                    {
+                        "value":  "# master file",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\master.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown",
+                        "PSChildName":  "master.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  1
+                    },
+                    {
+                        "value":  "",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\master.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown",
+                        "PSChildName":  "master.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  2
+                    },
+                    {
+                        "value":  "- [Sus](./TestA/sus.md)",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\master.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown",
+                        "PSChildName":  "master.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  3
+                    },
+                    {
+                        "value":  "",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\master.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown",
+                        "PSChildName":  "master.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  4
+                    },
+                    {
+                        "value":  "- [Ihr](./TestB/Test01/ihr.md)",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\master.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown",
+                        "PSChildName":  "master.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  5
+                    },
+                    {
+                        "value":  "",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\master.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown",
+                        "PSChildName":  "master.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  6
+                    },
+                    {
+                        "value":  "- [Oth](./TestD/Test01/oth.md)",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\master.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown",
+                        "PSChildName":  "master.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  7
+                    },
+                    {
+                        "value":  "# sus file",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA\\sus.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA",
+                        "PSChildName":  "sus.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  1
+                    },
+                    {
+                        "value":  "",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA\\sus.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA",
+                        "PSChildName":  "sus.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  2
+                    },
+                    {
+                        "value":  "- [Ihr](./../TestB/Test01/ihr.md)",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA\\sus.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA",
+                        "PSChildName":  "sus.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  3
+                    },
+                    {
+                        "value":  "",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA\\sus.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA",
+                        "PSChildName":  "sus.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  4
+                    },
+                    {
+                        "value":  "- [Oth](../TestD/Test01/oth.md)",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA\\sus.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestA",
+                        "PSChildName":  "sus.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  5
+                    },
+                    {
+                        "value":  "# ihr file",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01\\ihr.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01",
+                        "PSChildName":  "ihr.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  1
+                    },
+                    {
+                        "value":  "",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01\\ihr.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01",
+                        "PSChildName":  "ihr.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  2
+                    },
+                    {
+                        "value":  "- [Sus](./../../TestA/sus.md)",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01\\ihr.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01",
+                        "PSChildName":  "ihr.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  3
+                    },
+                    {
+                        "value":  "",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01\\ihr.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01",
+                        "PSChildName":  "ihr.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  4
+                    },
+                    {
+                        "value":  "- [Oth](../../TestD/Test01/oth.md)",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01\\ihr.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestB\\Test01",
+                        "PSChildName":  "ihr.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  5
+                    },
+                    {
+                        "value":  "# oth file",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01\\oth.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01",
+                        "PSChildName":  "oth.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  1
+                    },
+                    {
+                        "value":  "",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01\\oth.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01",
+                        "PSChildName":  "oth.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  2
+                    },
+                    {
+                        "value":  "- [Sus](../../TestA/sus.md)",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01\\oth.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01",
+                        "PSChildName":  "oth.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  3
+                    },
+                    {
+                        "value":  "",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01\\oth.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01",
+                        "PSChildName":  "oth.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  4
+                    },
+                    {
+                        "value":  "- [Ihr](../../TestB/Test01/ihr.md)",
+                        "PSPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01\\oth.md",
+                        "PSParentPath":  "Microsoft.PowerShell.Core\\FileSystem::C:\\note\\test\\PsMarkdown\\TestD\\Test01",
+                        "PSChildName":  "oth.md",
+                        "PSProvider":  "Microsoft.PowerShell.Core\\FileSystem",
+                        "ReadCount":  5
+                    }
+                ]
+}

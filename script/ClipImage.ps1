@@ -18,7 +18,7 @@ function Save-ClipboardToImageFormat {
         $Force
     )
 
-    $format = "None"
+    $format = 'Text'
 
     $obj = [PsCustomObject]@{
         Success = $false
@@ -29,23 +29,27 @@ function Save-ClipboardToImageFormat {
 
     $clip = Get-Clipboard -Format Image
 
-    if ($clip -eq $null) {
+    if ($null -eq $clip) {
         $clip = Get-Clipboard -Format FileDropList
     } else {
-        $format = "Image"
+        $format = 'Image'
     }
 
-    if ($clip -eq $null) {
-        $clip = Get-Clipboard -Format Text
-    } else {
-        $format = "FileDropList"
+    if ($format -eq 'Text') {
+        if ($null -eq $clip) {
+            $clip = Get-Clipboard -Format Text
+        } else {
+            $format = 'FileDropList'
+        }
     }
 
-    if ($clip -eq $null) {
-        Write-Error "No image found on Clipboard"
-        return $obj
-    } else {
-        $format = "Text"
+    if ($format -eq 'Text') {
+        if ($null -eq $clip) {
+            Write-Error 'No image found on Clipboard'
+            return $obj
+        } else {
+            $format = 'Text'
+        }
     }
 
     $BasePath = Join-Path $BasePath $FolderName

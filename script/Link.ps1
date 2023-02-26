@@ -1,3 +1,46 @@
+function Get-MarkdownLinkSparse {
+    [Alias('MdLink')]
+    Param(
+        [Parameter(ValueFromPipeline = $true)]
+        $Directory,
+
+        [Switch]
+        $All,
+
+        [Switch]
+        $AsObject,
+
+        [Switch]
+        $TestWebLink,
+
+        [Switch]
+        $PassThru
+    )
+
+    $what = Get-MarkdownLink `
+        -Directory $Directory `
+        -TestWebLink:$TestWebLink `
+        -PassThru:$PassThru
+
+    $what = if ($All) {
+        $what
+    } else {
+        @($what)[0]
+    }
+
+    if ($null -eq $what -or @($what).Count -eq 0) {
+        return $what
+    }
+
+    $what = if ($AsObject) {
+        $what
+    } else {
+        $what.LinkPath
+    }
+
+    return $what
+}
+
 function Get-MarkdownLink {
     Param(
         [Parameter(ValueFromPipeline = $true)]

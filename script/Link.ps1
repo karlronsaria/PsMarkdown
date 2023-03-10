@@ -17,28 +17,38 @@ function Get-MarkdownLinkSparse {
         $PassThru
     )
 
-    $what = Get-MarkdownLink `
-        -Directory $Directory `
-        -TestWebLink:$TestWebLink `
-        -PassThru:$PassThru
-
-    $what = if ($All) {
-        $what
-    } else {
-        @($what)[0]
+    Begin {
+        $links = @()
     }
 
-    if ($null -eq $what -or @($what).Count -eq 0) {
-        return $what
+    Process {
+        $what = Get-MarkdownLink `
+            -Directory $Directory `
+            -TestWebLink:$TestWebLink `
+            -PassThru:$PassThru
+
+        $links += @($what)
     }
 
-    $what = if ($AsObject) {
-        $what
-    } else {
-        $what.LinkPath
-    }
+    End {
+        $links = if ($All) {
+            $links
+        } else {
+            @($links)[0]
+        }
 
-    return $what
+        if ($null -eq $links -or @($links).Count -eq 0) {
+            return $links
+        }
+
+        $links = if ($AsObject) {
+            $links
+        } else {
+            $links.LinkPath
+        }
+
+        return $links
+    }
 }
 
 function Get-MarkdownLink {
@@ -167,8 +177,14 @@ function Get-MarkdownLink {
     }
 
     Process {
-        if ($Directory -is [String]) {
-            $Directory = Get-ChildItem $Directory
+        $Directory = switch ($Directory) {
+            { $_ -is [String] } {
+                Get-ChildItem $Directory
+            }
+
+            { $_ -is [Microsoft.PowerShell.Commands.MatchInfo] } {
+                Get-ChildItem $Directory.Path
+            }
         }
 
         $what = $Directory `

@@ -8,6 +8,9 @@ function Get-MarkdownLinkSparse {
         $All,
 
         [Switch]
+        $Cat,
+
+        [Switch]
         $AsObject,
 
         [Switch]
@@ -24,6 +27,7 @@ function Get-MarkdownLinkSparse {
     Process {
         $what = Get-MarkdownLink `
             -Directory $Directory `
+            -Cat:$Cat `
             -TestWebLink:$TestWebLink `
             -PassThru:$PassThru
 
@@ -55,6 +59,9 @@ function Get-MarkdownLink {
     Param(
         [Parameter(ValueFromPipeline = $true)]
         $Directory,
+
+        [Switch]
+        $Cat,
 
         [Switch]
         $TestWebLink,
@@ -177,13 +184,15 @@ function Get-MarkdownLink {
     }
 
     Process {
-        $Directory = switch ($Directory) {
-            { $_ -is [String] } {
-                Get-ChildItem $Directory
-            }
+        if (-not $Cat) {
+            $Directory = switch ($Directory) {
+                { $_ -is [String] } {
+                    Get-ChildItem $Directory
+                }
 
-            { $_ -is [Microsoft.PowerShell.Commands.MatchInfo] } {
-                Get-ChildItem $Directory.Path
+                { $_ -is [Microsoft.PowerShell.Commands.MatchInfo] } {
+                    Get-ChildItem $Directory.Path
+                }
             }
         }
 
@@ -191,7 +200,7 @@ function Get-MarkdownLink {
             | sls $searchPattern
 
         if ($null -eq $what) {
-            return
+            return @()
         }
 
         $items = Get-CaptureGroup $what `

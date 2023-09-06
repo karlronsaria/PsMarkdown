@@ -1,5 +1,20 @@
 # issue
 
+- [ ] 2023_09_06_003943
+
+  - where
+    - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
+  - actual
+    ```
+    C:\note\todo [master ≡ +2 ~3 -0 !]> dir *.md | mdlink
+    Index was outside the bounds of the array.
+    At C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script\Link.ps1:41 char:13
+    +             @($links)[0]
+    +             ~~~~~~~~~~~~
+        + CategoryInfo          : OperationStopped: (:) [], IndexOutOfRangeException
+        + FullyQualifiedErrorId : System.IndexOutOfRangeException
+    ```
+
 - [ ] 2023_08_09_010903
 
   - where

@@ -193,6 +193,10 @@ function Get-MarkdownLink {
                 { $_ -is [Microsoft.PowerShell.Commands.MatchInfo] } {
                     Get-ChildItem $Directory.Path
                 }
+
+                { $_ -is [System.IO.FileSystemInfo] } {
+                    $Directory
+                }
             }
         }
 

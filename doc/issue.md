@@ -1,6 +1,16 @@
 # issue
 
-- [ ] 2023_09_06_003943
+- [ ] 2023_09_07_201444
+
+  - where
+    - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
+  - actual
+    ```
+    C:\note [master ≡ +0 ~3 -0 !]> dir *.md -Recurse | sls cbc | mdlink
+    F, spoke over intercom
+    ```
+
+- [x] 2023_09_06_003943
 
   - where
     - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
@@ -20,7 +30,6 @@
   - where
     - ``PsMarkdown#Link#Move-MarkdownItem``
   - actual
-
     ```
     C:\note [master ≡]> Move-MarkdownItem -Source .\watch_-_2023_02_07.md -Destination .\watch\__COMPLETE\
     The variable '$matchInfo' cannot be retrieved because it has not been set.

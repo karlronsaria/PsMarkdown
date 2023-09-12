@@ -21,7 +21,7 @@ function Save-ClipboardToImageFormat {
     function New-MarkdownLink {
         Param(
             [String]
-            $FolderPath,
+            $FolderName,
 
             [String]
             $BaseName,
@@ -114,7 +114,7 @@ function Save-ClipboardToImageFormat {
             $link_name = $base_name
 
             $objects += @(New-MarkdownLink `
-                -FolderPath $FolderPath `
+                -FolderName $FolderName `
                 -BaseName $base_name `
                 -ItemName $item_name `
                 -LinkName $link_name `
@@ -148,7 +148,7 @@ function Save-ClipboardToImageFormat {
     }
 
     return New-MarkdownLink `
-        -FolderPath $FolderPath `
+        -FolderName $FolderName `
         -BaseName $base_name `
         -ItemName $item_name `
         -LinkName $link_name `

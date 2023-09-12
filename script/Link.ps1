@@ -108,7 +108,8 @@ function Get-MarkdownLink {
 
         function Get-CaptureGroup {
             Param(
-                [Object[]]
+                [Parameter(ValueFromPipeline = $true)]
+                [Object]
                 $MatchInfo,
 
                 [Switch]
@@ -118,59 +119,86 @@ function Get-MarkdownLink {
                 $PassThru
             )
 
-            foreach ($item in $MatchInfo) {
-                $linkPath = $item.Path
+            Begin {
+                $list = @()
+            }
 
-                foreach ($capture in $item.Matches) {
-                    $groupName = Get-CaptureGroupName $capture
-                    $value = $capture.Groups[$groupName].Value
+            Process {
+                $list += @($MatchInfo)
+            }
 
-                    if (@($groupName).Count -gt 0) {
-                        $groupName = @($groupName)[0]
-                    }
+            End {
+                $count = 0
 
-                    if ([String]::IsNullOrWhiteSpace($value)) {
-                        continue
-                    }
+                foreach ($item in $list) {
+                    $linkPath = $item.Path
 
-                    $searchMethod = ''
+                    foreach ($capture in $item.Matches) {
+                        $groupName = Get-CaptureGroupName $capture
+                        $value = $capture.Groups[$groupName].Value
 
-                    switch -Regex ($value) {
-                        '^\.\.?(\\|\/)' {
-                            $searchMethod = 'Relative'
-                            $parent = Split-Path $linkPath -Parent
-                            $linkPath = Join-Path $parent $value
+                        if (@($groupName).Count -gt 0) {
+                            $groupName = @($groupName)[0]
                         }
 
-                        default {
-                            $searchMethod = 'Absolute'
-                            $linkPath = $value
+                        if ([String]::IsNullOrWhiteSpace($value)) {
+                            continue
                         }
-                    }
 
-                    $found = if ($TestWebLink -and $groupName -eq 'Web') {
-                        Test-WebRequest -Uri $linkPath
-                    } else {
-                        Test-Path $linkPath
-                    }
+                        $searchMethod = ''
 
-                    $obj = [PsCustomObject]@{
-                        Capture = $value
-                        Type = $groupName
-                        SearchMethod = $searchMethod
-                        Found = $found
-                        LinkPath = $linkPath
-                        FilePath = $item.Path
-                    }
+                        switch -Regex ($value) {
+                            '^\.\.?(\\|\/)' {
+                                $searchMethod = 'Relative'
+                                $parent = Split-Path $linkPath -Parent
+                                $linkPath = Join-Path $parent $value
+                            }
 
-                    if ($PassThru) {
-                        $obj | Add-Member `
-                            -MemberType 'NoteProperty' `
-                            -Name 'MatchInfo' `
-                            -Value $item
-                    }
+                            default {
+                                $searchMethod = 'Absolute'
+                                $linkPath = $value
+                            }
+                        }
 
-                    Write-Output $obj
+                        $isWebLink = $TestWebLink -and $groupName -eq 'Web'
+
+                        $progressParam = @{
+                            Activity = "Testing Links"
+                            Status = if ($isWebLink) {
+                                    "Test-WebRequest: $linkPath"
+                                } else {
+                                    "Test-Path: $linkPath"
+                                }
+                            PercentComplete = 100 * $count / $list.Count
+                        }
+
+                        Write-Progress @progressParam
+                        $count = $count + 1
+
+                        $found = if ($isWebLink) {
+                            Test-WebRequest -Uri $linkPath
+                        } else {
+                            Test-Path $linkPath
+                        }
+
+                        $obj = [PsCustomObject]@{
+                            Capture = $value
+                            Type = $groupName
+                            SearchMethod = $searchMethod
+                            Found = $found
+                            LinkPath = $linkPath
+                            FilePath = $item.Path
+                        }
+
+                        if ($PassThru) {
+                            $obj | Add-Member `
+                                -MemberType 'NoteProperty' `
+                                -Name 'MatchInfo' `
+                                -Value $item
+                        }
+
+                        Write-Output $obj
+                    }
                 }
             }
         }
@@ -181,6 +209,8 @@ function Get-MarkdownLink {
         $imagePattern = "(?<=!$linkPattern"
         $searchPattern =
             "(?<Web>$webPattern)|(?<Image>$imagePattern)|(?<Reference>$referencePattern)"
+
+        $list = @()
     }
 
     Process {
@@ -200,18 +230,13 @@ function Get-MarkdownLink {
             }
         }
 
-        $what = $Directory `
-            | sls $searchPattern
+        $list += @($Directory | sls $searchPattern)
+    }
 
-        if ($null -eq $what) {
-            return @()
-        }
-
-        $items = Get-CaptureGroup $what `
+    End {
+        return $list | Get-CaptureGroup `
             -TestWebLink:$TestWebLink `
             -PassThru:$PassThru
-
-        return $items
     }
 }
 

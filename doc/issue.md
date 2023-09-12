@@ -1,5 +1,14 @@
 # issue
 
+- [ ] 2023_09_07_210457
+
+  - where
+    - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
+  - howto
+    - ``C:\note [master ≡ +0 ~3 -0 !]> dir *.md -Recurse | sls cbc | mdlink -TestWebLink``
+  - actual
+    - takes a while to halt
+
 - [ ] 2023_09_07_201444
 
   - where

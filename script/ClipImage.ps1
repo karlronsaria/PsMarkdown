@@ -18,6 +18,45 @@ function Save-ClipboardToImageFormat {
         $Force
     )
 
+    function New-MarkdownLink {
+        Param(
+            [String]
+            $FolderPath,
+
+            [String]
+            $BaseName,
+
+            [String]
+            $ItemName,
+
+            [String]
+            $LinkName,
+
+            [String]
+            $Format,
+
+            [PsCustomObject]
+            $ErrorObject
+        )
+
+        if (-not (Test-Path $ItemName)) {
+            Write-Error "Failed to save image to '$ItemName'"
+            return $ErrorObject
+        }
+
+        # 2021_11_25: This new line necessary for rendering with
+        # typora-0.11.18
+        $item_path = Join-Path "." $FolderName
+        $item_path = Join-Path $item_path $BaseName
+
+        return [PsCustomObject]@{
+            Success = $true
+            Path = $ItemName
+            MarkdownString = "![$LinkName]($($item_path.Replace('\', '/')))"
+            Format = $Format
+        }
+    }
+
     $format = 'Text'
 
     $obj = [PsCustomObject]@{
@@ -65,20 +104,34 @@ function Save-ClipboardToImageFormat {
 
     $item_name = ""
 
-    switch ($format) {
-        "Image" {
-            $base_name = "$FileName$FileExtension"
-            $item_name = Join-Path $BasePath $base_name
-            $clip.Save($item_name)
-            $link_name = $FileName
-        }
+    if ($format -eq "FileDropList") {
+        $objects = @()
 
-        "FileDropList" {
-            $item = $clip[0]
+        foreach ($item in $clip) {
             $base_name = $item.Name
             $item_name = Join-Path $BasePath $base_name
             [void] $item.CopyTo($item_name, $Force)
             $link_name = $base_name
+
+            $objects += @(New-MarkdownLink `
+                -FolderPath $FolderPath `
+                -BaseName $base_name `
+                -ItemName $item_name `
+                -LinkName $link_name `
+                -Format $format `
+                -ErrorObject $obj
+            )
+        }
+
+        return $objects
+    }
+
+    switch ($format) {
+        "Image" {
+            $base_name = @("$FileName$FileExtension")
+            $item_name = Join-Path $BasePath $base_name
+            $clip.Save($item_name)
+            $link_name = $FileName
         }
 
         "Text" {
@@ -94,21 +147,13 @@ function Save-ClipboardToImageFormat {
         }
     }
 
-    if (-not (Test-Path $item_name)) {
-        Write-Error "Failed to save image to '$item_name'"
-        return $obj
-    }
-
-    # 2021_11_25: This new line necessary for rendering with typora-0.11.18
-    $item_path = Join-Path "." $FolderName
-    $item_path = Join-Path $item_path $base_name
-
-    return [PsCustomObject]@{
-        Success = $true
-        Path = $item_name
-        MarkdownString = "![$link_name]($($item_path.Replace('\', '/')))"
-        Format = $format
-    }
+    return New-MarkdownLink `
+        -FolderPath $FolderPath `
+        -BaseName $base_name `
+        -ItemName $item_name `
+        -LinkName $link_name `
+        -Format $format `
+        -ErrorObject $obj
 }
 
 function Move-ToTrashFolder {

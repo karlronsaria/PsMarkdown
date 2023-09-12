@@ -15,7 +15,10 @@ function Save-ClipboardToImageFormat {
         $FileExtension = ".png",
 
         [Switch]
-        $Force
+        $Force,
+
+        [Switch]
+        $WhatIf
     )
 
     function New-MarkdownLink {
@@ -36,10 +39,13 @@ function Save-ClipboardToImageFormat {
             $Format,
 
             [PsCustomObject]
-            $ErrorObject
+            $ErrorObject,
+
+            [Switch]
+            $WhatIf
         )
 
-        if (-not (Test-Path $ItemName)) {
+        if (-not $WhatIf -and -not (Test-Path $ItemName)) {
             Write-Error "Failed to save image to '$ItemName'"
             return $ErrorObject
         }
@@ -94,7 +100,11 @@ function Save-ClipboardToImageFormat {
     $BasePath = Join-Path $BasePath $FolderName
 
     if (-not (Test-Path $BasePath)) {
-        New-Item -Path $BasePath -ItemType Directory | Out-Null
+        New-Item `
+            -Path $BasePath `
+            -ItemType Directory `
+            -WhatIf:$WhatIf `
+            | Out-Null
 
         if (-not (Test-Path $BasePath)) {
             Write-Error "Failed to find/create subdirectory '$FolderName'"
@@ -110,8 +120,11 @@ function Save-ClipboardToImageFormat {
         foreach ($item in $clip) {
             $base_name = $item.Name
             $item_name = Join-Path $BasePath $base_name
-            [void] $item.CopyTo($item_name, $Force)
             $link_name = $base_name
+
+            if (-not $WhatIf) {
+                [void] $item.CopyTo($item_name, $Force)
+            }
 
             $objects += @(New-MarkdownLink `
                 -FolderName $FolderName `
@@ -119,7 +132,8 @@ function Save-ClipboardToImageFormat {
                 -ItemName $item_name `
                 -LinkName $link_name `
                 -Format $format `
-                -ErrorObject $obj
+                -ErrorObject $obj `
+                -WhatIf:$WhatIf
             )
         }
 
@@ -130,8 +144,11 @@ function Save-ClipboardToImageFormat {
         "Image" {
             $base_name = @("$FileName$FileExtension")
             $item_name = Join-Path $BasePath $base_name
-            $clip.Save($item_name)
             $link_name = $FileName
+
+            if (-not $WhatIf) {
+                $clip.Save($item_name)
+            }
         }
 
         "Text" {
@@ -142,8 +159,11 @@ function Save-ClipboardToImageFormat {
 
             $base_name = Split-Path $item.Name -Leaf
             $item_name = Join-Path $BasePath $base_name
-            Copy-Item $clip $item_name -Force:$Force
             $link_name = $base_name
+
+            if (-not $WhatIf) {
+                Copy-Item $clip $item_name -Force:$Force
+            }
         }
     }
 
@@ -153,7 +173,8 @@ function Save-ClipboardToImageFormat {
         -ItemName $item_name `
         -LinkName $link_name `
         -Format $format `
-        -ErrorObject $obj
+        -ErrorObject $obj `
+        -WhatIf:$WhatIf
 }
 
 function Move-ToTrashFolder {

@@ -18,7 +18,16 @@ function Save-ClipboardToImageFormat {
         $Force,
 
         [Switch]
-        $WhatIf
+        $WhatIf,
+
+        [ArgumentCompleter({
+            [System.IO.FileInfo].DeclaredProperties.Name
+        })]
+        [ValidateScript({
+            $_ -in [System.IO.FileInfo].DeclaredProperties.Name
+        })]
+        [String]
+        $OrderFileDropListBy = 'Name'
     )
 
     function New-MarkdownLink {
@@ -106,7 +115,7 @@ function Save-ClipboardToImageFormat {
             -WhatIf:$WhatIf `
             | Out-Null
 
-        if (-not (Test-Path $BasePath)) {
+        if (-not $WhatIf -and -not (Test-Path $BasePath)) {
             Write-Error "Failed to find/create subdirectory '$FolderName'"
             return $obj
         }
@@ -114,33 +123,33 @@ function Save-ClipboardToImageFormat {
 
     $item_name = ""
 
-    if ($format -eq "FileDropList") {
-        $objects = @()
+    switch ($format) {
+        "FileDropList" {
+            $objects = @()
 
-        foreach ($item in $clip) {
-            $base_name = $item.Name
-            $item_name = Join-Path $BasePath $base_name
-            $link_name = $base_name
+            foreach ($item in $clip | sort -Property $OrderFileDropListBy) {
+                $base_name = $item.Name
+                $item_name = Join-Path $BasePath $base_name
+                $link_name = $base_name
 
-            if (-not $WhatIf) {
-                [void] $item.CopyTo($item_name, $Force)
+                if (-not $WhatIf) {
+                    [void] $item.CopyTo($item_name, $Force)
+                }
+
+                $objects += @(New-MarkdownLink `
+                    -FolderName $FolderName `
+                    -BaseName $base_name `
+                    -ItemName $item_name `
+                    -LinkName $link_name `
+                    -Format $format `
+                    -ErrorObject $obj `
+                    -WhatIf:$WhatIf
+                )
             }
 
-            $objects += @(New-MarkdownLink `
-                -FolderName $FolderName `
-                -BaseName $base_name `
-                -ItemName $item_name `
-                -LinkName $link_name `
-                -Format $format `
-                -ErrorObject $obj `
-                -WhatIf:$WhatIf
-            )
+            return $objects
         }
 
-        return $objects
-    }
-
-    switch ($format) {
         "Image" {
             $base_name = @("$FileName$FileExtension")
             $item_name = Join-Path $BasePath $base_name

@@ -1,5 +1,123 @@
+function New-ResourceDirectory {
+    # Needed for ``-ErrorAction SilentyContinue``
+    [CmdletBinding()]
+    Param(
+        [String]
+        $BasePath = (Get-Location).Path,
+
+        [String]
+        $FolderName = "res",
+
+        [Switch]
+        $WhatIf
+    )
+
+    $BasePath = Join-Path $BasePath $FolderName
+
+    if (-not (Test-Path $BasePath)) {
+        New-Item `
+            -Path $BasePath `
+            -ItemType Directory `
+            -WhatIf:$WhatIf `
+            | Out-Null
+
+        if (-not $WhatIf -and -not (Test-Path $BasePath)) {
+            Write-Error "Failed to find/create subdirectory '$FolderName'"
+            return
+        }
+    }
+
+    return $BasePath
+}
+
+function Get-ClipboardFormat {
+    # Needed for ``-ErrorAction SilentyContinue``
+    [CmdletBinding()]
+    Param()
+
+    $format = 'Text'
+    $success = $false
+    $clip = Get-Clipboard -Format Image
+
+    if ($null -eq $clip) {
+        $clip = Get-Clipboard -Format FileDropList
+    } else {
+        $success = $true
+        $format = 'Image'
+    }
+
+    if ($format -eq 'Text') {
+        if ($null -eq $clip) {
+            $clip = Get-Clipboard -Format Text
+        } else {
+            $success = $true
+            $format = 'FileDropList'
+        }
+    }
+
+    if ($format -eq 'Text') {
+        if ($null -eq $clip) {
+            Write-Error 'No image found on Clipboard'
+        }
+        else {
+            $success = $true
+            $format = 'Text'
+        }
+    }
+
+    return [PsCustomObject]@{
+        Success = $success
+        Format = $format
+        Clip = $clip
+    }
+}
+
+function New-MarkdownLink {
+    # Needed for ``-ErrorAction SilentyContinue``
+    [CmdletBinding()]
+    Param(
+        [String]
+        $FolderName,
+
+        [String]
+        $BaseName,
+
+        [String]
+        $ItemName,
+
+        [String]
+        $LinkName,
+
+        [String]
+        $Format,
+
+        [PsCustomObject]
+        $ErrorObject,
+
+        [Switch]
+        $WhatIf
+    )
+
+    if (-not $WhatIf -and -not (Test-Path $ItemName)) {
+        Write-Error "Failed to save image to '$ItemName'"
+        return $ErrorObject
+    }
+
+    # 2021_11_25: This new line necessary for rendering with
+    # typora-0.11.18
+    $item_path = Join-Path "." $FolderName
+    $item_path = Join-Path $item_path $BaseName
+
+    return [PsCustomObject]@{
+        Success = $true
+        Path = $ItemName
+        MarkdownString = "![$LinkName]($($item_path.Replace('\', '/')))"
+        Format = $Format
+    }
+}
+
 function Save-ClipboardToImageFormat {
-    # Needed for `-ErrorAction SilentyContinue`
+    # Needed for ``-ErrorAction SilentyContinue``
     [CmdletBinding()]
     Param(
         [String]
@@ -30,48 +148,6 @@ function Save-ClipboardToImageFormat {
         $OrderFileDropListBy = 'Name'
     )
 
-    function New-MarkdownLink {
-        Param(
-            [String]
-            $FolderName,
-
-            [String]
-            $BaseName,
-
-            [String]
-            $ItemName,
-
-            [String]
-            $LinkName,
-
-            [String]
-            $Format,
-
-            [PsCustomObject]
-            $ErrorObject,
-
-            [Switch]
-            $WhatIf
-        )
-
-        if (-not $WhatIf -and -not (Test-Path $ItemName)) {
-            Write-Error "Failed to save image to '$ItemName'"
-            return $ErrorObject
-        }
-
-        # 2021_11_25: This new line necessary for rendering with
-        # typora-0.11.18
-        $item_path = Join-Path "." $FolderName
-        $item_path = Join-Path $item_path $BaseName
-
-        return [PsCustomObject]@{
-            Success = $true
-            Path = $ItemName
-            MarkdownString = "![$LinkName]($($item_path.Replace('\', '/')))"
-            Format = $Format
-        }
-    }
-
     $format = 'Text'
 
     $obj = [PsCustomObject]@{
@@ -81,44 +157,23 @@ function Save-ClipboardToImageFormat {
         Format = $format
     }
 
-    $clip = Get-Clipboard -Format Image
+    $result = Get-ClipboardFormat
+    $obj.Success = $result.Success
+    $obj.Format = $result.Format
 
-    if ($null -eq $clip) {
-        $clip = Get-Clipboard -Format FileDropList
-    } else {
-        $format = 'Image'
+    if (-not $result.Success) {
+        return $obj
     }
 
-    if ($format -eq 'Text') {
-        if ($null -eq $clip) {
-            $clip = Get-Clipboard -Format Text
-        } else {
-            $format = 'FileDropList'
-        }
-    }
+    $clip = $result.Clip
 
-    if ($format -eq 'Text') {
-        if ($null -eq $clip) {
-            Write-Error 'No image found on Clipboard'
-            return $obj
-        } else {
-            $format = 'Text'
-        }
-    }
+    $BasePath = New-ResourceDirectory `
+        -BasePath $BasePath `
+        -FolderName $FolderName `
+        -WhatIf:$WhatIf
 
-    $BasePath = Join-Path $BasePath $FolderName
-
-    if (-not (Test-Path $BasePath)) {
-        New-Item `
-            -Path $BasePath `
-            -ItemType Directory `
-            -WhatIf:$WhatIf `
-            | Out-Null
-
-        if (-not $WhatIf -and -not (Test-Path $BasePath)) {
-            Write-Error "Failed to find/create subdirectory '$FolderName'"
-            return $obj
-        }
+    if ($null -eq $BasePath) {
+        return $obj
     }
 
     $item_name = ""

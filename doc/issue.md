@@ -5,7 +5,7 @@
   - where
     - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
   - howto
-    - ``C:\note [master ≡ +0 ~3 -0 !]> dir *.md -Recurse | sls cbc | mdlink -TestWebLink``
+    - ``cd \note; dir *.md -Recurse | sls cbc | mdlink -TestWebLink``
   - actual
     - takes a while to halt
 
@@ -232,3 +232,5 @@
 
     C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsTool\note [master ≡ +2 ~0 -3 !]>
     ```
+
+[Go Back](../readme.md)

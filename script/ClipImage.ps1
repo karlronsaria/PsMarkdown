@@ -1,35 +1,3 @@
-function New-ResourceDirectory {
-    # Needed for ``-ErrorAction SilentyContinue``
-    [CmdletBinding()]
-    Param(
-        [String]
-        $BasePath = (Get-Location).Path,
-
-        [String]
-        $FolderName = "res",
-
-        [Switch]
-        $WhatIf
-    )
-
-    $BasePath = Join-Path $BasePath $FolderName
-
-    if (-not (Test-Path $BasePath)) {
-        New-Item `
-            -Path $BasePath `
-            -ItemType Directory `
-            -WhatIf:$WhatIf `
-            | Out-Null
-
-        if (-not $WhatIf -and -not (Test-Path $BasePath)) {
-            Write-Error "Failed to find/create subdirectory '$FolderName'"
-            return
-        }
-    }
-
-    return $BasePath
-}
-
 function Get-ClipboardFormat {
     # Needed for ``-ErrorAction SilentyContinue``
     [CmdletBinding()]

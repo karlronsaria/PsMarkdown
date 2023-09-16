@@ -584,11 +584,10 @@ function Move-MarkdownItem {
     }
 
     if (-not $Notebook) {
-        $settingFile = "$PsScriptRoot/../res/setting.json"
+        $setting = cat "$PsScriptRoot/../res/setting.json" `
+            | ConvertFrom-Json
 
-        if ((Test-Path $settingFile)) {
-            $Notebook = (cat $settingFile | ConvertFrom-Json).Notebook
-        }
+        $Notebook = $setting.Link.Notebook
     }
 
     $dir = (Get-Item $Source).Directory

@@ -4,6 +4,7 @@ function Get-UxItem {
             $setting = cat "$PsScriptRoot/../res/setting.json" `
                 | ConvertFrom-Json
 
+            $setting = $setting.UxWrite
             $size = $setting.DefaultImageSize
             $ext = $setting.DefaultExtension
 
@@ -28,6 +29,8 @@ function Get-UxItem {
 
     $setting = cat "$PsScriptRoot/../res/setting.json" `
         | ConvertFrom-Json
+
+    $setting = $setting.UxWrite
 
     if ($Size -lt 0) {
         $Size = $setting.DefaultImageSize
@@ -69,6 +72,8 @@ function ConvertTo-MdUxWriteDoc {
 
     $setting = cat "PsScriptRoot/../res/setting.json" `
         | ConvertFrom-Json
+
+    $setting = $setting.UxWrite
 
     if ([String]::IsNullOrWhiteSpace($Delimiter)) {
         $Delimiter = $setting.Delimiter

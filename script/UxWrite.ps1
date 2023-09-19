@@ -64,7 +64,6 @@ function Get-UxItem {
 function ConvertTo-MdUxWriteDoc {
     Param(
         [Parameter(ValueFromPipeline = $true)]
-        [System.IO.FileInfo]
         $File,
 
         [String]
@@ -90,6 +89,7 @@ function ConvertTo-MdUxWriteDoc {
         $Delimiter = $setting.Delimiter
     }
 
+    $File = $File | Get-Item
     $pattern = "(?<=$Delimiter)[^$Delimiter]+(?=$Delimiter)"
 
     $basePath = New-ResourceDirectory `
@@ -154,7 +154,7 @@ function ConvertTo-MdUxWriteDoc {
         -Pattern $setting.DateTimePattern
 
     $next = $File.FullName
-    $prev = "$baseName$($File.Extension)"
+    $prev = Join-Path (Split-Path $next -Parent) "$baseName$($File.Extension)"
     Rename-Item $next $prev -Force:$Force
     $cat | Out-File $next -Force:$Force
 

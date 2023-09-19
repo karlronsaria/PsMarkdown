@@ -24,7 +24,7 @@ function Get-UxItem {
         $Extension,
 
         [Switch]
-        $UseExactMatch
+        $UseInexactMatch
     )
 
     $setting = cat "$PsScriptRoot/../res/setting.json" `
@@ -40,10 +40,17 @@ function Get-UxItem {
         $Extension = $setting.DefaultExtension
     }
 
+    $split = @($Name -split $setting.SplitDelimiter)
+    $Name = $split[0]
+
+    if ($split.Count -gt 1) {
+        $Size = [Int]$split[1]
+    }
+
     return dir "$PsScriptRoot/../res/$Extension/$Size" `
         -File `
         | where {
-            $_.Name -like "$Name$(if (-not $UseExactMatch) { "**" })"
+            $_.BaseName -like "$Name-$Size$(if ($UseInexactMatch) { "**" })"
         } `
         | foreach {
             [PsCustomObject]@{
@@ -64,13 +71,17 @@ function ConvertTo-MdUxWriteDoc {
         $Delimiter,
 
         [Switch]
-        $UseExactMatch,
+        $UseInexactMatch,
 
         [Switch]
-        $Force
+        $Force,
+
+        [ValidateSet('String', 'Object')]
+        [String]
+        $Output = 'String'
     )
 
-    $setting = cat "PsScriptRoot/../res/setting.json" `
+    $setting = cat "$PsScriptRoot/../res/setting.json" `
         | ConvertFrom-Json
 
     $setting = $setting.UxWrite
@@ -85,7 +96,10 @@ function ConvertTo-MdUxWriteDoc {
         -BasePath $File.Directory `
         -FolderName $setting.ResourceDir
 
-    $cat = foreach ($line in (cat $File)) {
+    $cat = @()
+    $list = @()
+
+    foreach ($line in (cat $File)) {
         $capture = [Regex]::Match($line, $pattern)
 
         while ($capture.Success) {
@@ -93,7 +107,7 @@ function ConvertTo-MdUxWriteDoc {
 
             $items = Get-UxItem `
                 -Name $value `
-                -UseExactMatch:$UseExactMatch
+                -UseInexactMatch:$UseInexactMatch
 
             foreach ($item in $items) {
                 $name = Split-Path $item.FullName -Leaf
@@ -103,16 +117,35 @@ function ConvertTo-MdUxWriteDoc {
                     -Destination (Join-Path $basePath $name)
             }
 
-            $replace = @($items | foreach { $_.MarkdownString }) -Join ' '
+            $original = "$Delimiter$value$Delimiter"
+            $replace = @($items | foreach { $_.MarkdownString })
 
             $line = $line -replace `
                 "$Delimiter$value$Delimiter", `
-                $replace
+                ($replace -Join ' ')
+
+            switch ($Output) {
+                'String' {
+                    Write-Output ""
+                    Write-Output "$original ->"
+
+                    $replace | foreach {
+                        Write-Output "  $_"
+                    }
+                }
+
+                'Object' {
+                    $list += @([PsCustomObject]@{
+                        Original = $original
+                        Replace = @($replace)
+                    })
+                }
+            }
 
             $capture = [Regex]::Match($line, $pattern)
         }
 
-        Write-Output $line
+        $cat += @($line)
     }
 
     $baseName = Replace-DateTimeStamp `
@@ -124,4 +157,22 @@ function ConvertTo-MdUxWriteDoc {
     $prev = "$baseName$($File.Extension)"
     Rename-Item $next $prev -Force:$Force
     $cat | Out-File $next -Force:$Force
+
+    switch ($Output) {
+        'String' {
+            Write-Output ""
+            Write-Output "NewItemPath: $next"
+            Write-Output "OldItemPath: $prev"
+        }
+
+        'Object' {
+            return [PsCustomObject]@{
+                Strings = $list
+                NewItemPath = $next
+                OldItemPath = $prev
+            }
+        }
+    }
 }
+
+

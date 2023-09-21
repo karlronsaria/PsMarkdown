@@ -69,6 +69,9 @@ function ConvertTo-MdUxWriteDoc {
         [String]
         $Delimiter,
 
+        [Int]
+        $Size = -1,
+
         [Switch]
         $UseInexactMatch,
 
@@ -89,6 +92,10 @@ function ConvertTo-MdUxWriteDoc {
         $Delimiter = $setting.Delimiter
     }
 
+    if ($Size -lt 0) {
+        $Size = $setting.DefaultImageSize
+    }
+
     $File = $File | Get-Item
     $pattern = "(?<=$Delimiter)[^$Delimiter]+(?=$Delimiter)"
 
@@ -107,6 +114,7 @@ function ConvertTo-MdUxWriteDoc {
 
             $items = Get-UxItem `
                 -Name $value `
+                -Size $Size `
                 -UseInexactMatch:$UseInexactMatch
 
             foreach ($item in $items) {

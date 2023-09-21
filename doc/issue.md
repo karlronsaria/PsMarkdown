@@ -1,39 +1,5 @@
 # issue
 
-- [ ] 2023_09_07_210457
-
-  - where
-    - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
-  - howto
-    - ``cd \note; dir *.md -Recurse | sls cbc | mdlink -TestWebLink``
-  - actual
-    - takes a while to halt
-
-- [ ] 2023_09_07_201444
-
-  - where
-    - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
-  - actual
-    ```
-    C:\note [master ≡ +0 ~3 -0 !]> dir *.md -Recurse | sls cbc | mdlink
-    F, spoke over intercom
-    ```
-
-- [x] 2023_09_06_003943
-
-  - where
-    - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
-  - actual
-    ```
-    C:\note\todo [master ≡ +2 ~3 -0 !]> dir *.md | mdlink
-    Index was outside the bounds of the array.
-    At C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script\Link.ps1:41 char:13
-    +             @($links)[0]
-    +             ~~~~~~~~~~~~
-        + CategoryInfo          : OperationStopped: (:) [], IndexOutOfRangeException
-        + FullyQualifiedErrorId : System.IndexOutOfRangeException
-    ```
-
 - [ ] 2023_08_09_010903
 
   - where
@@ -231,6 +197,40 @@
     da---l          4/9/2023   3:07 PM                res
 
     C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsTool\note [master ≡ +2 ~0 -3 !]>
+    ```
+
+- [x] 2023_09_07_201444
+
+  - where
+    - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
+  - actual
+    ```
+    C:\note [master ≡ +0 ~3 -0 !]> dir *.md -Recurse | sls cbc | mdlink
+    F, spoke over intercom
+    ```
+
+- [x] 2023_09_07_210457
+
+  - where
+    - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
+  - howto
+    - ``cd \note; dir *.md -Recurse | sls cbc | mdlink -TestWebLink``
+  - actual
+    - takes a while to halt
+
+- [x] 2023_09_06_003943
+
+  - where
+    - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
+  - actual
+    ```
+    C:\note\todo [master ≡ +2 ~3 -0 !]> dir *.md | mdlink
+    Index was outside the bounds of the array.
+    At C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script\Link.ps1:41 char:13
+    +             @($links)[0]
+    +             ~~~~~~~~~~~~
+        + CategoryInfo          : OperationStopped: (:) [], IndexOutOfRangeException
+        + FullyQualifiedErrorId : System.IndexOutOfRangeException
     ```
 
 [Go Back](../readme.md)

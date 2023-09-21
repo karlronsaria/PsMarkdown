@@ -21,20 +21,34 @@ function Get-MarkdownLinkSparse {
     )
 
     Begin {
-        $links = @()
+        $dirs = @()
     }
 
     Process {
-        $what = Get-MarkdownLink `
-            -Directory $Directory `
-            -Cat:$Cat `
-            -TestWebLink:$TestWebLink `
-            -PassThru:$PassThru
-
-        $links += @($what)
+        $dirs += @($Directory)
     }
 
     End {
+        $count = 1
+
+        $links = $dirs | foreach {
+            $progressParam = @{
+                Id = 1
+                Activity = "Testing Items"
+                Status = $Directory
+                PercentComplete = 100 * $count / $dirs.Count
+            }
+
+            Write-Progress @progressParam
+            $count = $count + 1
+
+            Get-MarkdownLink `
+                -Directory $_ `
+                -Cat:$Cat `
+                -TestWebLink:$TestWebLink `
+                -PassThru:$PassThru
+        }
+
         $links = if ($All) {
             $links
         } else {
@@ -163,6 +177,7 @@ function Get-MarkdownLink {
                         $isWebLink = $TestWebLink -and $groupName -eq 'Web'
 
                         $progressParam = @{
+                            Id = 2
                             Activity = "Testing Links"
                             Status = if ($isWebLink) {
                                     "Test-WebRequest: $linkPath"
@@ -204,7 +219,7 @@ function Get-MarkdownLink {
         }
 
         $webPattern = "https?://[^\s`"]+"
-        $linkPattern = "\[[^\[\]]*\]\s*\()[^\(\)]+(?=\))"
+        $linkPattern = "\[[^\[\]]*\]\()[^\(\)]+(?=\))"
         $referencePattern = "(?<=$linkPattern"
         $imagePattern = "(?<=!$linkPattern"
         $searchPattern =

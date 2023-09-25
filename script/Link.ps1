@@ -430,6 +430,7 @@ function Move-MarkdownItem {
         [Switch]
         $Force,
 
+        [String]
         $Notebook
     )
 
@@ -439,18 +440,18 @@ function Move-MarkdownItem {
             [String]
             $ItemPath
         )
-
+    
         $pattern = "!\[[^\[\]]+\]\((?<Resource>[^\(\)]+)\)"
         $dir = (Get-Item $ItemPath).Directory
-
+    
         foreach ($line in (cat $ItemPath)) {
             $capture = [Regex]::Match($line, $pattern)
-
+    
             if ($capture.Success) {
                 $value = $capture.Groups['Resource'].Value
                 $resourcePath = Join-Path $dir $value
                 $exists = Test-Path $resourcePath
-
+    
                 [PsCustomObject]@{
                     String = $value
                     Path = $resourcePath
@@ -464,65 +465,66 @@ function Move-MarkdownItem {
             }
         }
     }
-
+    
     function Get-MarkdownItemMovedContent {
         Param(
             [Parameter(ValueFromPipeline = $true)]
             $Source,
-
+    
+            [String]
             $Destination,
 
+            [String]
             $Notebook
         )
-
+    
         Process {
             if ($Source -is [String]) {
                 $Source = Get-ChildItem $Source
             }
-
+    
             foreach ($item in $Source) {
                 $links = $item | Get-MarkdownLink -PassThru | where {
                     $_.Type -eq 'Reference'
                 } | where {
                     $_.SearchMethod -eq 'Relative'
                 }
-
-                $cat = $Source | Get-Content
-
-                if ((Get-Item $Destination).Mode -like "d*") {
-                    $Destination =
-                        Join-Path $Destination (Split-Path $Source -Leaf)
-                }
-
+    
+                $cat = $item | Get-Content
+    
+                $Destination = Join-Path `
+                    (Get-Item $Destination).FullName `
+                    (Split-Path $item -Leaf)
+    
                 foreach ($link in $links) {
                     $capture = $link.MatchInfo.Matches[0].Groups[$link.Type]
-
+    
                     if ($link.Type -eq 'Web') {
                         continue
                     }
-
+    
                     $newLink = ConvertTo-MarkdownLinkSearchMethod `
                         -OriginPath $link.FilePath `
                         -DestinationPath $link.Capture `
                         -SearchMethod Absolute
-
+    
                     $newLink = ConvertTo-MarkdownLinkSearchMethod `
                         -OriginPath $Destination `
                         -DestinationPath $newLink `
                         -SearchMethod Relative
-
+    
                     $matchInfo = $link.MatchInfo
-
+    
                     $newLine =
                         $matchInfo.Line.Substring(0, $capture.Index) `
                             + $newLink `
                             + $matchInfo.Line.Substring( `
                                 $capture.Index + $capture.Length `
                             )
-
+    
                     $cat[$matchInfo.LineNumber - 1] = $newLine
                 }
-
+    
                 $moveItem = [PsCustomObject]@{
                     Path = $Destination
                     Content = $cat
@@ -536,63 +538,63 @@ function Move-MarkdownItem {
                         }
                     )
                 }
-
+    
                 $grep = dir $Notebook -Recurse `
                     | Get-MarkdownLink -PassThru | where {
                         $_.Type -eq 'Reference'
                     } | where {
                         $_.SearchMethod -eq 'Relative'
                     } | where {
-                        $_.Capture -match (Split-Path $Source -Leaf)
+                        $_.Capture -match (Split-Path $item -Leaf)
                     }
-
+    
                 $cats = @{}
-
+    
                 foreach ($item in $grep) {
                     if ($null -eq $cats[$item.FilePath]) {
                         $cats[$item.FilePath] = cat $item.FilePath
                     }
-
+    
                     $matchInfo = $item.MatchInfo
                     $capture = $matchInfo.Matches[0]
-
+    
                     $newLink = ConvertTo-MarkdownLinkSearchMethod `
                         -OriginPath $item.FilePath `
                         -DestinationPath $capture.Value `
                         -SearchMethod Absolute
-
+    
                     $newLink = ConvertTo-MarkdownLinkSearchMethod `
                         -OriginPath $item.FilePath `
                         -DestinationPath $Destination `
                         -SearchMethod Relative
-
+    
                     $newLine =
                         $matchInfo.Line.Substring(0, $capture.Index) `
                             + $newLink `
                             + $matchInfo.Line.Substring( `
                                 $capture.Index + $capture.Length `
                             )
-
+    
                     $cats[$matchInfo.Path][$matchInfo.LineNumber - 1] =
                         $newLine
                 }
-
+    
                 $moveItem.BackReferences = $cats.Keys | sort | foreach {
                     [PsCustomObject]@{
                         Path = $_
                         Content = $cats[$_]
                     }
                 }
-
+    
                 $moveItem.ChangeLinks += @(
                     [PsCustomObject]@{
-                        'FilePath' = $item.FilePath
+                        'FilePath' = $item.FullName
                         'LineNumber' = $matchInfo.LineNumber
                         'Old' = $matchInfo.Line
                         'New' = $newLine
                     }
                 )
-
+    
                 return $moveItem
             }
         }
@@ -642,9 +644,9 @@ function Move-MarkdownItem {
         -Destination $Destination `
         -Force:$Force
 
-    if ((Get-Item $Destination).Mode -like "d*") {
-        $Destination = Join-Path $Destination (Split-Path $Source -Leaf)
-    }
+    $Destination = Join-Path `
+        (Get-Item $Destination).FullName `
+        (Split-Path $Source -Leaf)
 
     if ($Notebook) {
         $moveLinkInfo.Content | Out-File $Destination -Force

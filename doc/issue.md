@@ -1,6 +1,6 @@
 # issue
 
-- [ ] 2023_08_09_010903
+- [x] 2023_08_09_010903
 
   - where
     - ``PsMarkdown#Link#Move-MarkdownItem``
@@ -51,7 +51,7 @@
         + FullyQualifiedErrorId : PropertyNotFoundStrict
     ```
 
-- [ ] 2023_05_02_203733
+- [x] 2023_05_02_203733
 
   - where
     - ``PsMarkdown#Link#Move-MarkdownItem``
@@ -120,7 +120,7 @@
         + FullyQualifiedErrorId : PropertyNotFoundStrict
     ```
 
-- [ ] 2023_04_09_151015
+- [x] 2023_04_09_151015
   - where
     - ``PsMarkdown#Link#Move-MarkdownItem``
   - actual

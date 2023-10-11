@@ -35,7 +35,7 @@ function Get-MarkdownLinkSparse {
             $progressParam = @{
                 Id = 1
                 Activity = "Testing Items"
-                Status = $Directory
+                Status = $_
                 PercentComplete = 100 * $count / $dirs.Count
             }
 

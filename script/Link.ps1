@@ -49,6 +49,14 @@ function Get-MarkdownLinkSparse {
                 -PassThru:$PassThru
         }
 
+        $progressParam = @{
+            Id = 1
+            Activity = "Testing Items"
+            Complete = $true
+        }
+
+        Write-Progress @progressParam
+
         $links = if ($All) {
             $links
         } else {
@@ -215,6 +223,14 @@ function Get-MarkdownLink {
                         Write-Output $obj
                     }
                 }
+
+                $progressParam = @{
+                    Id = 2
+                    Activity = "Testing Links"
+                    Complete = $true
+                }
+
+                Write-Progress @progressParam
             }
         }
 

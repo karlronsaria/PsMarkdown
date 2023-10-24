@@ -11,9 +11,6 @@ function Get-MarkdownLinkSparse {
         $Cat,
 
         [Switch]
-        $AsObject,
-
-        [Switch]
         $TestWebLink,
 
         [Switch]
@@ -67,7 +64,7 @@ function Get-MarkdownLinkSparse {
             return $links
         }
 
-        $links = if ($AsObject) {
+        $links = if ($PassThru) {
             $links
         } else {
             $links.LinkPath
@@ -234,7 +231,7 @@ function Get-MarkdownLink {
             }
         }
 
-        $webPattern = "https?://[^\s`"]+"
+        $webPattern = "https?://[^\s`"\(\)\<\>]+"
         $linkPattern = "\[[^\[\]]*\]\()[^\(\)]+(?=\))"
         $referencePattern = "(?<=$linkPattern"
         $imagePattern = "(?<=!$linkPattern"

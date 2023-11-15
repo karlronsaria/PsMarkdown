@@ -1,5 +1,63 @@
 # issue
 
+- [ ] 2023_11_09_230331
+  - where
+    - ``PsMarkdown#Link#Get-MarkdownLink``
+  - actual
+
+    ```text
+    typename F
+    F(T)
+    F(T)
+    int
+    int
+    int
+    decltype(add)(int, int)
+    int
+    typename U, typename F
+
+    ...
+
+    kbd
+    kbd
+    kbd
+    kbd
+    kbd
+    kbd
+    ```
+
+- [x] 2023_11_14_234154
+  - where
+    - ``PsMarkdown#ClipImage#Save-ClipboardToImageFormat``
+  - howto
+    - <kb>Alt</kb> + <kb>PrtSc</kb>
+
+    - ```powershell
+      Save-ClipboardToImageFormat `
+          -BasePath . `
+          -FolderName __temp `
+          -FileName sus `
+          -FileExtension png
+      ```
+
+  - actual
+
+    ```
+    Save-ClipboardToImageFormat : No file found at System.Drawing.Bitmap
+    At line:1 char:1
+    + Save-ClipboardToImageFormat -BasePath . -FolderName __temp -FileName  ...
+    + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        + CategoryInfo          : NotSpecified: (:) [Write-Error], WriteErrorExcept
+       ion
+        + FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException
+       ,Save-ClipboardToImageFormat
+
+
+    Success Path MarkdownString Format
+    ------- ---- -------------- ------
+       True                     Image
+    ```
+
 - [x] 2023_08_09_010903
 
   - where

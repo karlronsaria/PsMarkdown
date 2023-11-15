@@ -116,13 +116,11 @@ function Save-ClipboardToImageFormat {
         $OrderFileDropListBy = 'Name'
     )
 
-    $format = 'Text'
-
     $obj = [PsCustomObject]@{
         Success = $false
         Path = ""
         MarkdownString = ""
-        Format = $format
+        Format = 'Text'
     }
 
     $result = Get-ClipboardFormat
@@ -146,7 +144,7 @@ function Save-ClipboardToImageFormat {
 
     $item_name = ""
 
-    switch ($format) {
+    switch ($obj.Format) {
         "FileDropList" {
             $objects = @()
 
@@ -164,7 +162,7 @@ function Save-ClipboardToImageFormat {
                     -BaseName $base_name `
                     -ItemName $item_name `
                     -LinkName $link_name `
-                    -Format $format `
+                    -Format $obj.Format `
                     -ErrorObject $obj `
                     -WhatIf:$WhatIf
                 )
@@ -174,7 +172,7 @@ function Save-ClipboardToImageFormat {
         }
 
         "Image" {
-            $base_name = @("$FileName$FileExtension")
+            $base_name = "$FileName$FileExtension"
             $item_name = Join-Path $BasePath $base_name
             $link_name = $FileName
 
@@ -204,7 +202,7 @@ function Save-ClipboardToImageFormat {
         -BaseName $base_name `
         -ItemName $item_name `
         -LinkName $link_name `
-        -Format $format `
+        -Format $obj.Format `
         -ErrorObject $obj `
         -WhatIf:$WhatIf
 }

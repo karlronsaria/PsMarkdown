@@ -32,7 +32,12 @@ function Get-MarkdownLinkSparse {
             $progressParam = @{
                 Id = 1
                 Activity = "Testing Items"
-                Status = $_
+                Status = if ([String]::IsNullOrEmpty("$_")) {
+                        "..."
+                    }
+                    else {
+                        $_
+                    }
                 PercentComplete = 100 * $count / $dirs.Count
             }
 
@@ -170,7 +175,16 @@ function Get-MarkdownLink {
                             '^\.\.?(\\|\/)' {
                                 $searchMethod = 'Relative'
                                 $parent = Split-Path $linkPath -Parent
-                                $linkPath = Join-Path $parent $value
+
+                                $linkPath = switch ($linkPath) {
+                                    "InputStream" {
+                                        $linkPath
+                                    }
+
+                                    default {
+                                        Join-Path $parent $value
+                                    }
+                                }
                             }
 
                             default {

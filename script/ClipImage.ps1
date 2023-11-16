@@ -3,40 +3,29 @@ function Get-ClipboardFormat {
     [CmdletBinding()]
     Param()
 
-    $format = 'Text'
-    $success = $false
-    $clip = Get-Clipboard -Format Image
+    Add-Type -AssemblyName System.Windows.Forms
+    $assembly = [System.Windows.Forms.Clipboard]
 
-    if ($null -eq $clip) {
-        $clip = Get-Clipboard -Format FileDropList
-    } else {
-        $success = $true
-        $format = 'Image'
-    }
+    $types = @(
+        'Image'
+        'FileDropList'
+        'Text'
+    )
 
-    if ($format -eq 'Text') {
-        if ($null -eq $clip) {
-            $clip = Get-Clipboard -Format Text
-        } else {
-            $success = $true
-            $format = 'FileDropList'
-        }
-    }
-
-    if ($format -eq 'Text') {
-        if ($null -eq $clip) {
-            Write-Error 'No image found on Clipboard'
-        }
-        else {
-            $success = $true
-            $format = 'Text'
+    foreach ($type in $types) {
+        if ($assembly::"Contains$type"()) {
+            return [PsCustomObject]@{
+                Success = $true
+                Format = $type
+                Clip = $assembly::"Get$type"()
+            }
         }
     }
 
     return [PsCustomObject]@{
-        Success = $success
-        Format = $format
-        Clip = $clip
+        Success = $false
+        Format = "Text"
+        Clip = ""
     }
 }
 

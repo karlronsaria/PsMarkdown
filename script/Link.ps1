@@ -222,6 +222,10 @@ function Get-MarkdownLink {
                             Found = $found
                             LinkPath = $linkPath
                             FilePath = $item.Path
+                            Protocol = [Regex]::Match(
+                                $linkPath,
+                                "^(\w|\d)+(?=://)"
+                            ).Value
                         }
 
                         if ($PassThru) {

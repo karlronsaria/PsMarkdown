@@ -36,24 +36,24 @@ function Get-MdCodeBlock {
                         Indent = $blockStart.Groups['indent'].Value
                     }
                 }
-            }
-            else {
-                $blockEnd = [Regex]::Match(
-                    $line,
-                    "^\s*``````"
-                )
 
-                if ($blockEnd.Success) {
-                    $snippets += @($snippet)
-                    $snippet = $null
-                }
-                else {
-                    Write-Host "Line: $line"
-                    $snippet.Lines += @(
-                        $line -replace "^$($snippet.Indent)", ""
-                    )
-                }
+                continue
             }
+
+            $blockEnd = [Regex]::Match(
+                $line,
+                "^\s*``````"
+            )
+
+            if ($blockEnd.Success) {
+                $snippets += @($snippet)
+                $snippet = $null
+                continue
+            }
+
+            $snippet.Lines += @(
+                $line -replace "^$($snippet.Indent)", ""
+            )
         }
     }
 

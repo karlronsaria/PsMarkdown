@@ -96,7 +96,12 @@ function Save-ClipboardToImageFormat {
         $WhatIf,
 
         [ArgumentCompleter({
-            [System.IO.FileInfo].DeclaredProperties.Name
+            Param($A, $B, $C)
+
+            return [System.IO.FileInfo].DeclaredProperties.Name |
+                where {
+                    $_ -like "$C*"
+                }
         })]
         [ValidateScript({
             $_ -in [System.IO.FileInfo].DeclaredProperties.Name

@@ -1,17 +1,21 @@
 function Get-UxItem {
     Param(
         [ArgumentCompleter({
-            $setting = cat "$PsScriptRoot/../res/setting.json" `
-                | ConvertFrom-Json
+            Param($A, $B, $C)
+
+            $setting = cat "$PsScriptRoot/../res/setting.json" |
+                ConvertFrom-Json
 
             $setting = $setting.UxWrite
             $size = $setting.DefaultImageSize
             $ext = $setting.DefaultExtension
 
-            return dir "$PsScriptRoot/../res/$ext/$size" `
-                -File `
-                | foreach {
+            return dir "$PsScriptRoot/../res/$ext/$size" -File |
+                foreach {
                     [Regex]::Match($_, ".*(?=\.[^\.]+$)")
+                } |
+                where {
+                    $_ -like "$C*"
                 }
         })]
         [String]
@@ -27,10 +31,9 @@ function Get-UxItem {
         $UseInexactMatch
     )
 
-    $setting = cat "$PsScriptRoot/../res/setting.json" `
-        | ConvertFrom-Json
-
-    $setting = $setting.UxWrite
+    $setting = (cat "$PsScriptRoot/../res/setting.json" |
+        ConvertFrom-Json).
+        UxWrite
 
     if ($Size -lt 0) {
         $Size = $setting.DefaultImageSize
@@ -47,12 +50,11 @@ function Get-UxItem {
         $Size = [Int]$split[1]
     }
 
-    return dir "$PsScriptRoot/../res/$Extension/$Size" `
-        -File `
-        | where {
+    return dir "$PsScriptRoot/../res/$Extension/$Size" -File |
+        where {
             $_.BaseName -like "$Name-$Size$(if ($UseInexactMatch) { "**" })"
-        } `
-        | foreach {
+        } |
+        foreach {
             [PsCustomObject]@{
                 FullName = $_.FullName
                 MarkdownString =
@@ -83,10 +85,9 @@ function ConvertTo-MdUxWriteDoc {
         $Output = 'String'
     )
 
-    $setting = cat "$PsScriptRoot/../res/setting.json" `
-        | ConvertFrom-Json
-
-    $setting = $setting.UxWrite
+    $setting = (cat "$PsScriptRoot/../res/setting.json" |
+        ConvertFrom-Json).
+        UxWrite
 
     if ([String]::IsNullOrWhiteSpace($Delimiter)) {
         $Delimiter = $setting.Delimiter
@@ -162,7 +163,11 @@ function ConvertTo-MdUxWriteDoc {
         -Pattern $setting.DateTimePattern
 
     $next = $File.FullName
-    $prev = Join-Path (Split-Path $next -Parent) "$baseName$($File.Extension)"
+
+    $prev = Join-Path `
+        (Split-Path $next -Parent) `
+        "$baseName$($File.Extension)"
+
     Rename-Item $next $prev -Force:$Force
     $cat | Out-File $next -Force:$Force
 
@@ -182,5 +187,4 @@ function ConvertTo-MdUxWriteDoc {
         }
     }
 }
-
 

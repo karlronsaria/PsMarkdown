@@ -26,13 +26,14 @@ function Get-MarkdownLinkSparse {
     }
 
     End {
-        $count = 1
-
-        $links = $dirs | foreach {
+        $links = $dirs | foreach -Begin {
+            $count = 1
+        } -Process {
             $progressParam = @{
                 Id = 1
                 Activity = "Testing Items"
-                Status = if ([String]::IsNullOrEmpty("$_")) {
+                Status =
+                    if ([String]::IsNullOrEmpty("$_")) {
                         "..."
                     }
                     else {
@@ -101,15 +102,15 @@ function Get-MarkdownLink {
                 $Uri
             )
 
-            $HTTP_Response = $null
-            $HTTP_Request = [System.Net.WebRequest]::Create($Uri)
-            $HTTP_Response = $HTTP_Request.GetResponse()
+            $HTTP_Response =
+                [System.Net.WebRequest]::Create($Uri).
+                GetResponse()
 
             if ($null -eq $HTTP_Response) {
                 return $null
             }
 
-            $HTTP_Status = [int]$HTTP_Response.StatusCode
+            $HTTP_Status = [Int] $HTTP_Response.StatusCode
             $HTTP_Response.Close()
             return 200 -eq $HTTP_Status
         }
@@ -120,11 +121,11 @@ function Get-MarkdownLink {
                 $MatchInfo
             )
 
-            $groups = $MatchInfo.Groups `
-                | where {
-                    $_.Success `
-                    -and $_.Length -gt 0 `
-                    -and $_.Name -notmatch "\d+"
+            $groups = $MatchInfo.Groups |
+                where {
+                    $_.Success -and
+                    $_.Length -gt 0 -and
+                    $_.Name -notmatch "\d+"
                 }
 
             return $groups.Name
@@ -177,7 +178,7 @@ function Get-MarkdownLink {
                                 $parent = Split-Path $linkPath -Parent
 
                                 $linkPath = switch ($linkPath) {
-                                    "InputStream" {
+                                    'InputStream' {
                                         $linkPath
                                     }
 
@@ -198,7 +199,8 @@ function Get-MarkdownLink {
                         $progressParam = @{
                             Id = 2
                             Activity = "Testing Links"
-                            Status = if ($isWebLink) {
+                            Status =
+                                if ($isWebLink) {
                                     "Test-WebRequest: $linkPath"
                                 } else {
                                     "Test-Path: $linkPath"
@@ -222,10 +224,11 @@ function Get-MarkdownLink {
                             Found = $found
                             LinkPath = $linkPath
                             FilePath = $item.Path
-                            Protocol = [Regex]::Match(
-                                $linkPath,
-                                "^(\w|\d)+(?=://)"
-                            ).Value
+                            Protocol =
+                                [Regex]::Match(
+                                    $linkPath,
+                                    "^(\w|\d)+(?=://)"
+                                ).Value
                         }
 
                         if ($PassThru) {
@@ -287,7 +290,7 @@ function Get-MarkdownLink {
     }
 }
 
-function ConvertTo-MarkdownLinkSearchMethod {
+function Convert-MarkdownLinkResolver {
     Param(
         [Parameter(
             ParameterSetName = 'ByCustomObject',
@@ -367,11 +370,11 @@ function ConvertTo-MarkdownLinkSearchMethod {
                 $Link
             )
 
-            $Link = $Link.Trim()
-            $Link = $Link.Replace('\', '/')
-            $Link = $Link -Replace '^\./\.\./', '../'
-            $Link = $Link -Replace '(?<=.+/)\./', ''
-            return $Link
+            return $Link.
+                Trim().
+                Replace('\', '/') |
+                foreach { $_ -Replace '^\./\.\./', '../' } |
+                foreach { $_ -Replace '(?<=.+/)\./', '' }
         }
     }
 
@@ -393,21 +396,25 @@ function ConvertTo-MarkdownLinkSearchMethod {
 
         switch ($SearchMethod) {
             'Relative' {
-                $nodes = if ([String]::IsNullOrWhiteSpace($what.InputTail)) {
-                    0
-                } else {
-                    ([String] $what.InputTail).Trim('/').Split('/').Count
-                }
+                $nodes =
+                    if ([String]::IsNullOrWhiteSpace($what.InputTail)) {
+                        0
+                    } else {
+                        "$($what.InputTail)".
+                            Trim('/').
+                            Split('/').
+                            Count
+                    }
 
-                $fullPath = "."
-                $node = 1
+                $fullPath = Join-Path `
+                    -Path '.' `
+                    -ChildPath $(
+                        (1 .. ($nodes - 1) |
+                        foreach { '..' }) `
+                        -Join '\'
+                    ) `
+                    -AdditionalChildPath $what.ReferenceTail
 
-                while ($node -lt $nodes) {
-                    $fullPath = Join-Path $fullPath '..'
-                    $node = $node + 1
-                }
-
-                $fullPath = Join-Path $fullPath $what.ReferenceTail
                 return Format-Link $fullPath
             }
 
@@ -423,12 +430,14 @@ function ConvertTo-MarkdownLinkSearchMethod {
                     $what.ReferenceTail.Replace('\', '/').Split('/')
 
                 if ($refTailList[0] -eq '.') {
-                    $refTailList = $refTailList[1 .. ($refTailList.Count - 1)]
+                    $refTailList =
+                        $refTailList[1 .. ($refTailList.Count - 1)]
                 }
 
-                while ($refTailList[0] -eq '..' `
-                    -and $originList.Count -gt 0)
-                {
+                while (
+                    $refTailList[0] -eq '..' -and `
+                    $originList.Count -gt 0
+                ) {
                     $refTailList = if ($refTailList.Count -eq 1) {
                         @()
                     } else {
@@ -535,12 +544,12 @@ function Move-MarkdownItem {
                         continue
                     }
 
-                    $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                    $newLink = Convert-MarkdownLinkResolver `
                         -OriginPath $link.FilePath `
                         -DestinationPath $link.Capture `
                         -SearchMethod Absolute
 
-                    $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                    $newLink = Convert-MarkdownLinkResolver `
                         -OriginPath $Destination `
                         -DestinationPath $newLink `
                         -SearchMethod Relative
@@ -590,12 +599,12 @@ function Move-MarkdownItem {
                     $matchInfo = $item.MatchInfo
                     $capture = $matchInfo.Matches[0]
 
-                    $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                    $newLink = Convert-MarkdownLinkResolver `
                         -OriginPath $item.FilePath `
                         -DestinationPath $capture.Value `
                         -SearchMethod Absolute
 
-                    $newLink = ConvertTo-MarkdownLinkSearchMethod `
+                    $newLink = Convert-MarkdownLinkResolver `
                         -OriginPath $item.FilePath `
                         -DestinationPath $Destination `
                         -SearchMethod Relative

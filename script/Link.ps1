@@ -280,7 +280,8 @@ function Get-MarkdownLink {
             }
         }
 
-        $list += @($Directory | sls $searchPattern)
+        $list += @($Directory |
+            Select-MarkdownString $searchPattern)
     }
 
     End {

@@ -4,7 +4,7 @@ Describe 'Move-PsMarkdownItem' {
     BeforeAll {
         function Get-PsMarkdownMoveTestPath {
             $path = (cat "$PsScriptRoot\..\res\setting.json" `
-                | ConvertFrom-Json).Notebook
+                | ConvertFrom-Json).Link.Notebook
 
             if ((Get-Item $path).Mode -notlike "d*") {
                 $path = Split-Path $path -Parent

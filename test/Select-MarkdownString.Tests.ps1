@@ -1,4 +1,4 @@
-Import-Module -Name Pester
+#Requres -Module Pester
 
 Describe 'Select-MarkdownString' {
     BeforeAll {

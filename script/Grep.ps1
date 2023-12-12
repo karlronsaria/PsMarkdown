@@ -13,7 +13,7 @@ function Select-MarkdownString {
         [Parameter(ParameterSetName='ObjectRaw', Mandatory=$true, ValueFromPipeline=$true)]
         [AllowNull()]
         [AllowEmptyString()]
-        [psobject]
+        [PsObject]
         ${InputObject},
 
         [Parameter(Mandatory=$true, Position=0)]
@@ -85,14 +85,13 @@ function Select-MarkdownString {
 
         if ($PsBoundParameters.TryGetValue(
             'OutBuffer',
-            [ref]$outBuffer
+            [ref] $outBuffer
         )) {
             $PsBoundParameters['OutBuffer'] = 1
         }
 
-        $map = [Ordered]@{}
+        $map = [ordered]@{}
         $myList = @()
-        $byObject = $false
     }
 
     Process {
@@ -102,17 +101,12 @@ function Select-MarkdownString {
             "LiteralFile(Raw)?" { $LiteralFile }
         }
 
-        $byObject = $byObject -or
-            $mainInput -is [String]
-
-        if ($byObject) {
+        if ($mainInput -is [string]) {
             $myList += @($InputObject)
             return
         }
 
-        $sls = @(Select-String @PsBoundParameters)
-
-        foreach ($item in $sls) {
+        foreach ($item in @(Select-String @PsBoundParameters)) {
             $map[$item.Path] =
                 @($map[$item.Path] | where { $_ }) +
                 @($item)
@@ -122,35 +116,34 @@ function Select-MarkdownString {
     End {
         function Get-CodeBlockRange {
             Param(
-                [Parameter(ValueFromPipeline = $true)]
-                [PsCustomObject]
-                $InputObject
+                [Parameter(ValueFromPipelineByPropertyName = $true)]
+                [int]
+                $LineNumber,
+
+                [Parameter(ValueFromPipelineByPropertyName = $true)]
+                [string[]]
+                $Lines
             )
 
             Process {
-                $range = 
-                    ($InputObject.LineNumber - 1) .. 
-                    ($InputObject.LineNumber + $InputObject.Lines.Count)
-
-                return $range
+                ($LineNumber - 1) .. ($LineNumber + $Lines.Count)
             }
         }
 
-        if ($byObject) {
-            $codeBlockRange = $myList |
-                Get-MdCodeBlock |
-                Get-CodeBlockRange
+        $codeBlockRange = $myList |
+            Get-MdCodeBlock |
+            Get-CodeBlockRange
 
-            [void] $PsBoundParameters.Remove('InputObject')
+        $params = $PsBoundParameters.PsObject.Copy()
+        [void] $params.Remove('InputObject')
 
-            return $myList |
-                Select-String @PsBoundParameters |
-                where {
-                    $_.LineNumber -notin $codeBlockRange
-                }
-        }
+        $myList |
+            Select-String @params |
+            where {
+                $_.LineNumber -notin $codeBlockRange
+            }
 
-        return $(foreach ($key in $map.Keys) {
+        foreach ($key in $map.Keys) {
             $codeBlockRange = $key |
                 Get-ChildItem |
                 Get-Content |
@@ -160,6 +153,6 @@ function Select-MarkdownString {
             $map[$key] | where {
                 $_.LineNumber -notin $codeBlockRange
             }
-        })
+        }
     }
 }

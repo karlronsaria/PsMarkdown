@@ -1,6 +1,6 @@
 #Requres -Module Pester
 
-Describe 'Move-PsMarkdownItem' {
+Describe 'Move-MarkdownItem' {
     BeforeAll {
         function Get-PsMarkdownMoveTestPath {
             $path = (cat "$PsScriptRoot\..\res\setting.json" `

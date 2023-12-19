@@ -110,6 +110,42 @@ function Save-ClipboardToImageFormat {
         $OrderFileDropListBy = 'Name'
     )
 
+    function Save-FileByTextClip {
+        Param(
+            [String]
+            $InputObject,
+
+            [Switch]
+            $WhatIf
+        )
+
+        if (-not (Test-Path $InputObject)) {
+            Write-Error "No file found at $InputObject"
+
+            return [PsCustomObject]@{
+                Success = $false
+                BaseName = ""
+                ItemName = ""
+                LinkName = ""
+            }
+        }
+
+        $base_name = Split-Path $InputObject -Leaf
+        $item_name = Join-Path $BasePath $base_name
+        $link_name = $base_name
+
+        if (-not $WhatIf) {
+            Copy-Item $InputObject $item_name -Force:$Force
+        }
+
+        return [PsCustomObject]@{
+            Success = $true
+            BaseName = $base_name
+            ItemName = $item_name
+            LinkName = $link_name
+        }
+    }
+
     $obj = [PsCustomObject]@{
         Success = $false
         Path = ""
@@ -148,7 +184,25 @@ function Save-ClipboardToImageFormat {
                 $link_name = $base_name
 
                 if (-not $WhatIf) {
-                    [void] $item.CopyTo($item_name, $Force)
+                    switch ($item) {
+                        { $_ -is [String] } {
+                            $result = Save-FileByTextClip `
+                                -InputObject $clip `
+                                -WhatIf:$WhatIf
+
+                            if (-not $result.Success) {
+                                return $obj
+                            }
+
+                            $base_name = $result.BaseName
+                            $item_name = $result.ItemName
+                            $link_name = $result.LinkName
+                        }
+
+                        default {
+                            [void] $item.CopyTo($item_name, $Force)
+                        }
+                    }
                 }
 
                 $objects += @(New-MarkdownLink `
@@ -176,18 +230,17 @@ function Save-ClipboardToImageFormat {
         }
 
         "Text" {
-            if (-not (Test-Path $clip)) {
-                Write-Error "No file found at $clip"
+            $result = Save-FileByTextClip `
+                -InputObject $clip `
+                -WhatIf:$WhatIf
+
+            if (-not $result.Success) {
                 return $obj
             }
 
-            $base_name = Split-Path $item.Name -Leaf
-            $item_name = Join-Path $BasePath $base_name
-            $link_name = $base_name
-
-            if (-not $WhatIf) {
-                Copy-Item $clip $item_name -Force:$Force
-            }
+            $base_name = $result.BaseName
+            $item_name = $result.ItemName
+            $link_name = $result.LinkName
         }
     }
 

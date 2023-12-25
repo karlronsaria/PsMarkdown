@@ -12,7 +12,8 @@ Describe 'Select-MarkdownString' {
                 Pattern = "result_of|result_type"
                 ExpectedCount = 13
                 ExpectedLineNumbers = @(
-                    97, 102, 104, 114, 120, 122, 134, 140, 142, 148, 150, 160, 180
+                    97, 102, 104, 114, 120, 122, 134,
+                    140, 142, 148, 150, 160, 180
                 )
             }
         ) {
@@ -30,7 +31,6 @@ Describe 'Select-MarkdownString' {
                     -Pattern $Pattern
 
             $byCat = dir $path |
-                dir |
                 cat |
                 Select-MarkdownString `
                     -Pattern $Pattern

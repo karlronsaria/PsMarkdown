@@ -1,5 +1,31 @@
 # issue
 
+- [ ] 2024_05_10_025039
+  - where
+    - ``PsMarkdown#ClipImage#Save-...``
+    - actual
+      - images placed in same folder as document instead of ``./res`` subfolder
+
+- [ ] 2024_04_22_203047
+  - where
+    - ``PsMarkdown#Grep#MdLink``
+  - log
+
+    ```powershell
+    cd \note
+    cd .\kinesiology\
+    dir *.md -Recurse | sls biceps
+    dir *.md -Recurse | sls biceps | mdlink -all | open
+    dir *.md -Recurse | sls biceps | mdlink -all
+    dir *.md -Recurse | sls biceps | select -unique
+    dir *.md -Recurse | sls biceps | group -Property Path
+    dir *.md -Recurse | sls biceps | group -Property Path | what Name
+    dir *.md -Recurse | sls biceps | group -Property Path | what Name | mdlink
+    dir *.md -Recurse | sls biceps | group -Property Path | what Name | mdlink -All
+    get-history | clip
+    get-history
+    ```
+
 - [x] 2023_11_09_230331
   - where
     - ``PsMarkdown#Link#Get-MarkdownLink``

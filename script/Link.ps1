@@ -5,9 +5,6 @@ function Get-MarkdownLinkSparse {
         $Directory,
 
         [Switch]
-        $All,
-
-        [Switch]
         $Cat,
 
         [Switch]
@@ -59,12 +56,6 @@ function Get-MarkdownLinkSparse {
         }
 
         Write-Progress @progressParam
-
-        $links = if ($All) {
-            $links
-        } else {
-            @($links)[0]
-        }
 
         if ($null -eq $links -or @($links).Count -eq 0) {
             return $links
@@ -121,14 +112,15 @@ function Get-MarkdownLink {
                 $MatchInfo
             )
 
-            $groups = $MatchInfo.Groups |
+            return $MatchInfo.Groups |
                 where {
                     $_.Success -and
                     $_.Length -gt 0 -and
                     $_.Name -notmatch "\d+"
+                } |
+                foreach {
+                    $_.Name
                 }
-
-            return $groups.Name
         }
 
         function Get-CaptureGroup {

@@ -1,10 +1,19 @@
 # issue
 
-- [ ] 2024_05_10_025039
+- [ ] 2024_09_18_230753
+  - where
+    - In VsCode
+    - ``PsMarkdown#ClipImage#Save-...``
+  - howto
+    - copy image to clipboard from browser or file explorer
+  - actual
+    - no action
+
+- [x] 2024_05_10_025039
   - where
     - ``PsMarkdown#ClipImage#Save-...``
-    - actual
-      - images placed in same folder as document instead of ``./res`` subfolder
+  - actual
+    - images placed in same folder as document instead of ``./res`` subfolder
 
 - [ ] 2024_04_22_203047
   - where

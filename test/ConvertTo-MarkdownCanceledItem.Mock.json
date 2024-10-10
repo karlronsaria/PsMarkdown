@@ -1,0 +1,25 @@
+{
+  "Mock": [
+    {
+      "In": "  - we need",
+      "Expected": "  - ~~we need~~"
+    },
+    {
+      "In": "    - [ ] a new-student onboarding procedure",
+      "Expected": "    - [x] ~~a new-student onboarding procedure~~"
+    },
+    {
+      "In": "  - 3. we need",
+      "Expected": "  - ~~3. we need~~"
+    },
+    {
+      "In": "  1. 3. we need",
+      "Expected": "  1. ~~3. we need~~"
+    },
+    {
+      "In": "    1. [ ] 3. we need   ",
+      "Expected": "    1. [x] ~~3. we need~~   "
+    }
+  }
+}
+

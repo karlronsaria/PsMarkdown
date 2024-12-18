@@ -3,7 +3,7 @@ function Get-UxItem {
         [ArgumentCompleter({
             Param($A, $B, $C)
 
-            $setting = cat "$PsScriptRoot/../res/setting.json" |
+            $setting = Get-Content "$PsScriptRoot/../res/setting.json" |
                 ConvertFrom-Json
 
             $setting = $setting.UxWrite
@@ -31,7 +31,7 @@ function Get-UxItem {
         $UseInexactMatch
     )
 
-    $setting = (cat "$PsScriptRoot/../res/setting.json" |
+    $setting = (Get-Content "$PsScriptRoot/../res/setting.json" |
         ConvertFrom-Json).
         UxWrite
 
@@ -85,7 +85,7 @@ function ConvertTo-MdUxWriteDoc {
         $Output = 'String'
     )
 
-    $setting = (cat "$PsScriptRoot/../res/setting.json" |
+    $setting = (Get-Content "$PsScriptRoot/../res/setting.json" |
         ConvertFrom-Json).
         UxWrite
 
@@ -107,7 +107,7 @@ function ConvertTo-MdUxWriteDoc {
     $cat = @()
     $list = @()
 
-    foreach ($line in (cat $File)) {
+    foreach ($line in (Get-Content $File)) {
         $capture = [Regex]::Match($line, $pattern)
 
         while ($capture.Success) {

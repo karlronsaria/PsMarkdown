@@ -3,7 +3,7 @@
 Describe 'Move-MarkdownItem' {
     BeforeAll {
         function Get-PsMarkdownMoveTestPath {
-            $path = (cat "$PsScriptRoot\..\res\setting.json" `
+            $path = (Get-Content "$PsScriptRoot\..\res\setting.json" `
                 | ConvertFrom-Json).Link.Notebook
 
             if ((Get-Item $path).Mode -notlike "d*") {
@@ -107,7 +107,7 @@ Describe 'Move-MarkdownItem' {
     It 'Given a Notebook argument, changes links and backreference links accurately' {
         New-PsMarkdownMoveTest | Out-Null
         $path = "$(Get-PsMarkdownMoveTestPath)/test/PsMarkdown"
-        $params = (cat "$PsScriptRoot/Move-MarkdownItem.Params.json" `
+        $params = (Get-Content "$PsScriptRoot/Move-MarkdownItem.Params.json" `
             | ConvertFrom-Json).Param
 
         $params = $params[0]
@@ -118,7 +118,7 @@ Describe 'Move-MarkdownItem' {
 
         $diff = Compare-Object `
             (Get-PsMarkdownMoveTestContent -PassThru) `
-            (cat "$PsScriptRoot/Move-MarkdownItem.After.001.json" `
+            (Get-Content "$PsScriptRoot/Move-MarkdownItem.After.001.json" `
                 | ConvertFrom-Json)
 
         $diff | Should Be $null

@@ -478,7 +478,7 @@ function Move-MarkdownItem {
         $pattern = "!\[[^\[\]]+\]\((?<Resource>[^\(\)]+)\)"
         $dir = (Get-Item $ItemPath).Directory
 
-        foreach ($line in (cat $ItemPath)) {
+        foreach ($line in (Get-Content $ItemPath)) {
             $capture = [Regex]::Match($line, $pattern)
 
             if ($capture.Success) {
@@ -586,7 +586,7 @@ function Move-MarkdownItem {
 
                 foreach ($item in $grep) {
                     if ($null -eq $cats[$item.FilePath]) {
-                        $cats[$item.FilePath] = cat $item.FilePath
+                        $cats[$item.FilePath] = Get-Content $item.FilePath
                     }
 
                     $matchInfo = $item.MatchInfo
@@ -635,7 +635,7 @@ function Move-MarkdownItem {
     }
 
     if (-not $Notebook) {
-        $setting = cat "$PsScriptRoot/../res/setting.json" `
+        $setting = Get-Content "$PsScriptRoot/../res/setting.json" `
             | ConvertFrom-Json
 
         $Notebook = $setting.Link.Notebook
@@ -685,7 +685,7 @@ function Move-MarkdownItem {
     if ($Notebook) {
         $moveLinkInfo.Content | Out-File $Destination -Force
 
-        if (Compare-Object ($moveLinkInfo.Content) (cat $Destination)) {
+        if (Compare-Object ($moveLinkInfo.Content) (Get-Content $Destination)) {
             Write-Warning "Failed to write file $($Destination)"
         }
         else {
@@ -695,7 +695,7 @@ function Move-MarkdownItem {
         foreach ($backRef in $moveLinkInfo.BackReferences) {
             $backRef.Content | Out-File $backRef.Path -Force
 
-            if (Compare-Object ($backRef.Content) (cat $backRef.Path)) {
+            if (Compare-Object ($backRef.Content) (Get-Content $backRef.Path)) {
                 Write-Warning "Failed to write file $($backRef.Path)"
             }
             else {

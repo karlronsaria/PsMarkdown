@@ -31,7 +31,7 @@ Describe 'Select-MarkdownString' {
                     -Pattern $Pattern
 
             $byCat = dir $path |
-                cat |
+                Get-Content |
                 Select-MarkdownString `
                     -Pattern $Pattern
 

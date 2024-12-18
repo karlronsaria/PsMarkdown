@@ -116,7 +116,7 @@ Describe 'Move-MarkdownItem' {
             -Source (Join-Path $path $params.Source) `
             -Destination (Join-Path $path $params.Destination)
 
-        $diff = diff `
+        $diff = Compare-Object `
             (Get-PsMarkdownMoveTestContent -PassThru) `
             (cat "$PsScriptRoot/Move-MarkdownItem.After.001.json" `
                 | ConvertFrom-Json)

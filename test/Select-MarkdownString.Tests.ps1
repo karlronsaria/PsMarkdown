@@ -39,7 +39,7 @@ Describe 'Select-MarkdownString' {
             $byFile.LineNumber | Should Be $ExpectedLineNumbers
             $byCat.Count | Should Be $ExpectedCount
             $byCat.LineNumber | Should Be $ExpectedLineNumbers
-            diff ($byFile.Line) ($byCat.Line) | Should Be $null
+            Compare-Object ($byFile.Line) ($byCat.Line) | Should Be $null
         }
     }
 }

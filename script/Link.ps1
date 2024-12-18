@@ -685,7 +685,7 @@ function Move-MarkdownItem {
     if ($Notebook) {
         $moveLinkInfo.Content | Out-File $Destination -Force
 
-        if (diff ($moveLinkInfo.Content) (cat $Destination)) {
+        if (Compare-Object ($moveLinkInfo.Content) (cat $Destination)) {
             Write-Warning "Failed to write file $($Destination)"
         }
         else {
@@ -695,7 +695,7 @@ function Move-MarkdownItem {
         foreach ($backRef in $moveLinkInfo.BackReferences) {
             $backRef.Content | Out-File $backRef.Path -Force
 
-            if (diff ($backRef.Content) (cat $backRef.Path)) {
+            if (Compare-Object ($backRef.Content) (cat $backRef.Path)) {
                 Write-Warning "Failed to write file $($backRef.Path)"
             }
             else {

@@ -178,7 +178,7 @@ function Save-ClipboardToImageFormat {
         "FileDropList" {
             $objects = @()
 
-            foreach ($item in $clip | sort -Property $OrderFileDropListBy) {
+            foreach ($item in $clip | Sort-Object -Property $OrderFileDropListBy) {
                 $base_name = $item.Name
                 $item_name = Join-Path $BasePath $base_name
                 $link_name = $base_name

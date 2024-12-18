@@ -77,7 +77,7 @@ Describe 'Move-MarkdownItem' {
 
         function Get-PsMarkdownMoveTestTree {
             $path = "$(Get-PsMarkdownMoveTestPath)/test/PsMarkdown"
-            $tree = (dir (Join-Path $path "*.md") -Recurse).FullName | sort
+            $tree = (dir (Join-Path $path "*.md") -Recurse).FullName | Sort-Object
             return $tree
         }
 

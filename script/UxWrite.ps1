@@ -85,6 +85,28 @@ function ConvertTo-MdUxWriteDoc {
         $Output = 'String'
     )
 
+    function Replace-DateTimeStamp {
+        Param(
+            [String]
+            $InputObject,
+
+            [String]
+            $Format,
+
+            [String]
+            $Pattern
+        )
+
+        $dateTime = Get-Date -Format $Format
+        $capture = [Regex]::Match($InputObject, "_$($Pattern)$")
+
+        return $(if ($capture.Success) {
+            "$($InputObject -replace "_$($Pattern)$", "_$dateTime")"
+        } else {
+            "$($InputObject)_$dateTime"
+        })
+    }
+
     $setting = (Get-Content "$PsScriptRoot/../res/setting.json" |
         ConvertFrom-Json).
         UxWrite

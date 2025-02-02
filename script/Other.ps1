@@ -13,17 +13,20 @@ function New-ResourceDirectory {
     )
 
     if ([String]::IsNullOrWhiteSpace($FolderName)) {
+        $setting = Get-Item "$PsScriptRoot/../res/setting.json" |
+            Get-Content |
+            ConvertFrom-Json
+
         $FolderName = $setting.ResourceDir
     }
 
     $BasePath = Join-Path $BasePath $FolderName
 
     if (-not (Test-Path $BasePath)) {
-        New-Item `
+        $null = New-Item `
             -Path $BasePath `
             -ItemType Directory `
-            -WhatIf:$WhatIf `
-            | Out-Null
+            -WhatIf:$WhatIf
 
         if (-not $WhatIf -and -not (Test-Path $BasePath)) {
             Write-Error "Failed to find/create subdirectory '$FolderName'"
@@ -34,24 +37,3 @@ function New-ResourceDirectory {
     return $BasePath
 }
 
-function Replace-DateTimeStamp {
-    Param(
-        [String]
-        $InputObject,
-
-        [String]
-        $Format,
-
-        [String]
-        $Pattern
-    )
-
-    $dateTime = Get-Date -Format $Format
-    $capture = [Regex]::Match($InputObject, "_$($Pattern)$")
-
-    return $(if ($capture.Success) {
-        "$($InputObject -replace "_$($Pattern)$", "_$dateTime")"
-    } else {
-        "$($InputObject)_$dateTime"
-    })
-}

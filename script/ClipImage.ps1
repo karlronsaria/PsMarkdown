@@ -84,7 +84,7 @@ function Save-ClipboardToImageFormat {
         $FolderName = "res",
 
         [String]
-        $FileName = (Get-Date -Format "yyyy_MM_dd_HHmmss"),
+        $FileName = (Get-Date -Format "yyyy_MM_dd_HHmmss"), # Uses DateTimeFormat
 
         [String]
         $FileExtension = ".png",

@@ -709,6 +709,13 @@ function Move-MarkdownItem {
     }
 }
 
+<#
+.SYNOPSIS
+Qform-select markdown resource links by image preview
+
+.DESCRIPTION
+Qform-select markdown resource links by image preview. Uses PsQuickform
+#>
 function Select-MarkdownResource {
     Param(
         [Parameter(ValueFromPipeline = $true)]

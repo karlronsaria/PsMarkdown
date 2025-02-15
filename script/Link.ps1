@@ -1,3 +1,5 @@
+#Requires -Modules PsQuickform
+
 function Get-MarkdownLinkSparse {
     [Alias('MdLink')]
     Param(
@@ -706,3 +708,33 @@ function Move-MarkdownItem {
         }
     }
 }
+
+function Select-MarkdownResource {
+    Param(
+        [Parameter(ValueFromPipeline = $true)]
+        $File
+    )
+
+    $path = Resolve-Path $File
+    $parent = Split-Path $path -Parent
+
+    $imageLinks = cat $path |
+        Get-MarkdownLink -Cat |
+        where { $_.Type -eq 'Image' }
+
+    $fullPaths = $imagelinks |
+        what Capture |
+        foreach { Join-Path $parent $_ } |
+        Resolve-Path
+
+    $select = $fullPaths |
+        Select-QformImagePreview -Caption 'Select all that apply'
+
+    if (-not $select.Confirm) {
+        return
+    }
+
+    $select.Images.Index |
+        foreach { $fullPaths[$_] }
+}
+

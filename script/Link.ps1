@@ -722,7 +722,7 @@ function Select-MarkdownResource {
         $File
     )
 
-    $path = Resolve-Path $File
+    $path = Resolve-Path $File -ErrorAction Stop
     $parent = Split-Path $path -Parent
 
     $imageLinks = cat $path |
@@ -741,7 +741,12 @@ function Select-MarkdownResource {
         return
     }
 
+    if ($null -eq $fullPaths -or @($fullPaths).Count -eq 0) {
+        return
+    }
+
     $select.Images.Index |
+        where { $null -ne $_ } |
         foreach { $fullPaths[$_] }
 }
 

@@ -1,6 +1,6 @@
 # issue
 
-- [ ] 2025_02_17_001910
+- [x] 2025_02_17_001910
   - where: ``Link#Select-MarkdownResource``
   - howto
 
@@ -16,7 +16,7 @@
          | Index operation failed; the array index evaluated to null.
     ```
 
-- [ ] 2024_09_18_230753
+- [x] 2024_09_18_230753
   - where
     - In VsCode
     - ``PsMarkdown#ClipImage#Save-...``

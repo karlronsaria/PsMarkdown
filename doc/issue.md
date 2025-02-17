@@ -1,5 +1,21 @@
 # issue
 
+- [ ] 2025_02_17_001910
+  - where: ``Link#Select-MarkdownResource``
+  - howto
+
+    ![2025_02_17_001940](./res/2025_02_17_001940.png)
+
+  - actual
+
+    ```text
+    InvalidOperation: C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script\Link.ps1:745
+    Line |
+     745 |          foreach { $fullPaths[$_] }
+         |                    ~~~~~~~~~~~~~~
+         | Index operation failed; the array index evaluated to null.
+    ```
+
 - [ ] 2024_09_18_230753
   - where
     - In VsCode

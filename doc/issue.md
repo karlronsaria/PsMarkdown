@@ -31,7 +31,7 @@
   - actual
     - images placed in same folder as document instead of ``./res`` subfolder
 
-- [ ] 2024_04_22_203047
+- [x] 2024_04_22_203047
   - where
     - ``PsMarkdown#Grep#MdLink``
   - log

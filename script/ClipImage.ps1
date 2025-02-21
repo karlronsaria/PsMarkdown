@@ -60,7 +60,7 @@ function New-MarkdownLink {
         return $ErrorObject
     }
 
-    # 2021_11_25: This new line necessary for rendering with
+    # 2021-11-25: This new line necessary for rendering with
     # typora-0.11.18
     $item_path = Join-Path "." $FolderName
     $item_path = Join-Path $item_path $BaseName
@@ -84,7 +84,7 @@ function Save-ClipboardToImageFormat {
         $FolderName = "res",
 
         [String]
-        $FileName = (Get-Date -Format "yyyy_MM_dd_HHmmss"), # Uses DateTimeFormat
+        $FileName = (Get-Date -Format "yyyy-MM-dd-HHmmss"), # Uses DateTimeFormat
 
         [String]
         $FileExtension = ".png",

@@ -8,7 +8,7 @@ Describe 'Select-MarkdownString' {
     Context "From Pipeline" {
         It "Given valid input '<Directory>' with Pattern '<Pattern>'" -TestCases @(
             @{
-                Directory = "doc_-_2023_03_30_ChatGPT_Cpp11MonadTemplate.md"
+                Directory = "doc_-_2023-03-30_ChatGPT_Cpp11MonadTemplate.md"
                 Pattern = "result_of|result_type"
                 ExpectedCount = 13
                 ExpectedLineNumbers = @(

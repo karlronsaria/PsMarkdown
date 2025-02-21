@@ -1,10 +1,10 @@
 # issue
 
-- [x] 2025_02_17_001910
+- [x] 2025-02-17-001910
   - where: ``Link#Select-MarkdownResource``
   - howto
 
-    ![2025_02_17_001940](./res/2025_02_17_001940.png)
+    ![2025-02-17-001940](./res/2025-02-17-001940.png)
 
   - actual
 
@@ -16,7 +16,7 @@
          | Index operation failed; the array index evaluated to null.
     ```
 
-- [x] 2024_09_18_230753
+- [x] 2024-09-18-230753
   - where
     - In VsCode
     - ``PsMarkdown#ClipImage#Save-...``
@@ -25,13 +25,13 @@
   - actual
     - no action
 
-- [x] 2024_05_10_025039
+- [x] 2024-05-10-025039
   - where
     - ``PsMarkdown#ClipImage#Save-...``
   - actual
     - images placed in same folder as document instead of ``./res`` subfolder
 
-- [x] 2024_04_22_203047
+- [x] 2024-04-22-203047
   - where
     - ``PsMarkdown#Grep#MdLink``
   - log
@@ -51,7 +51,7 @@
     get-history
     ```
 
-- [x] 2023_11_09_230331
+- [x] 2023-11-09-230331
   - where
     - ``PsMarkdown#Link#Get-MarkdownLink``
   - actual
@@ -77,7 +77,7 @@
     kbd
     ```
 
-- [x] 2023_11_14_234154
+- [x] 2023-11-14-234154
   - where
     - ``PsMarkdown#ClipImage#Save-ClipboardToImageFormat``
   - howto
@@ -109,13 +109,13 @@
        True                     Image
     ```
 
-- [x] 2023_08_09_010903
+- [x] 2023-08-09-010903
 
   - where
     - ``PsMarkdown#Link#Move-MarkdownItem``
   - actual
     ```
-    C:\note [master ≡]> Move-MarkdownItem -Source .\watch_-_2023_02_07.md -Destination .\watch\__COMPLETE\
+    C:\note [master ≡]> Move-MarkdownItem -Source .\watch_-_2023-02-07.md -Destination .\watch\__COMPLETE\
     The variable '$matchInfo' cannot be retrieved because it has not been set.
     At C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script\Link.ps1:489 char:44
     +                             'LineNumber' = $matchInfo.LineNumber
@@ -160,14 +160,14 @@
         + FullyQualifiedErrorId : PropertyNotFoundStrict
     ```
 
-- [x] 2023_05_02_203733
+- [x] 2023-05-02-203733
 
   - where
     - ``PsMarkdown#Link#Move-MarkdownItem``
   - actual
 
     ```
-    C:\note [master ≡ +4 ~4 -0 !]> Move-MarkdownItem .\pool_-_2023_01_26.md C:\note\d
+    C:\note [master ≡ +4 ~4 -0 !]> Move-MarkdownItem .\pool_-_2023-01-26.md C:\note\d
     rawboard
     The variable '$matchInfo' cannot be retrieved because it has not been set.
     At C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script
@@ -229,13 +229,13 @@
         + FullyQualifiedErrorId : PropertyNotFoundStrict
     ```
 
-- [x] 2023_04_09_151015
+- [x] 2023-04-09-151015
   - where
     - ``PsMarkdown#Link#Move-MarkdownItem``
   - actual
 
     ```
-    C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsTool\note [master ≡]> Move-MarkdownItem .\todo_-_2022_03_23.md ..\doc\
+    C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsTool\note [master ≡]> Move-MarkdownItem .\todo_-_2022-03-23.md ..\doc\
     The variable '$matchInfo' cannot be retrieved because it has not been set.
     At C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script
     \Link.ps1:480 char:44
@@ -308,7 +308,7 @@
     C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsTool\note [master ≡ +2 ~0 -3 !]>
     ```
 
-- [x] 2023_09_07_201444
+- [x] 2023-09-07-201444
 
   - where
     - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
@@ -318,7 +318,7 @@
     F, spoke over intercom
     ```
 
-- [x] 2023_09_07_210457
+- [x] 2023-09-07-210457
 
   - where
     - ``PsMarkdown#Link#Get-MarkdownLinkSparse``
@@ -327,7 +327,7 @@
   - actual
     - takes a while to halt
 
-- [x] 2023_09_06_003943
+- [x] 2023-09-06-003943
 
   - where
     - ``PsMarkdown#Link#Get-MarkdownLinkSparse``

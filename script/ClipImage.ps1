@@ -1,3 +1,5 @@
+. "$PsScriptRoot/../script/Other.ps1"
+
 function Get-ClipboardFormat {
     # Needed for ``-ErrorAction SilentyContinue``
     [CmdletBinding()]
@@ -60,7 +62,7 @@ function New-MarkdownLink {
         return $ErrorObject
     }
 
-    # 2021-11-25: This new line necessary for rendering with
+    # (karlr 2021-11-25): This new line necessary for rendering with
     # typora-0.11.18
     $item_path = Join-Path "." $FolderName
     $item_path = Join-Path $item_path $BaseName
@@ -120,7 +122,7 @@ function Save-ClipboardToImageFormat {
         )
 
         if (-not (Test-Path $InputObject)) {
-            Write-Error "No file found at $InputObject"
+            Write-Error "No file found at '$InputObject'"
 
             return [PsCustomObject]@{
                 Success = $false
@@ -235,7 +237,15 @@ function Save-ClipboardToImageFormat {
                 -WhatIf:$WhatIf
 
             if (-not $result.Success) {
-                return $obj
+                # # (karlr 2025-02-22): I don't know why this line is here.
+                # return $obj
+
+                return [pscustomobject]@{
+                    Success = $false
+                    Path = ''
+                    MarkdownString = ''
+                    Format = $obj.Format
+                }
             }
 
             $base_name = $result.BaseName

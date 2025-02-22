@@ -1,5 +1,43 @@
 # issue
 
+- [x] 2025-02-22-005302
+  - where: ``PsMarkdown#ClipImage#Save-...``
+  - howto
+
+    With non-resolvable text on the clipboard
+
+    ```powershell
+    Save-ClipboardToImageFormat -BasePath .
+    ```
+
+  - actual
+
+    ```text
+    Write-Error: C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script\ClipImage.ps1:235
+    Line |
+     235 |              $result = Save-FileByTextClip `
+         |                        ~~~~~~~~~~~~~~~~~~~~~
+         | No file found at set "command=%comamnd%; Out-Toast
+
+    Success Path MarkdownString Format
+    ------- ---- -------------- ------
+       True                     Text
+    ```
+
+  - expected
+
+    ```text
+    Write-Error: C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script\ClipImage.ps1:235
+    Line |
+     235 |              $result = Save-FileByTextClip `
+         |                        ~~~~~~~~~~~~~~~~~~~~~
+         | No file found at set '"command=%comamnd%; Out-Toast'
+
+    Success Path MarkdownString Format
+    ------- ---- -------------- ------
+      False                     Text
+    ```
+
 - [x] 2025-02-17-001910
   - where: ``Link#Select-MarkdownResource``
   - howto

@@ -1,5 +1,40 @@
 # issue
 
+- [ ] 2025-03-31-174935
+  - where: ``Move-MarkdownItem``
+  - howto
+
+    ```powershell
+    Move-MarkdownItem .\journal_-_2025-03-31_demo_MinecraftMassLogin.md .\emp\journal\
+    ```
+
+  - actual
+
+    ```text
+        Directory: C:\note\emp\journal
+    
+    Mode                 LastWriteTime         Length Name
+    ----                 -------------         ------ ----
+    d----           3/31/2025  5:41 PM                res
+    Move-Item: C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script\Link.ps1:672
+    Line |
+     672 |          Move-Item `
+         |          ~~~~~~~~~~~
+         | Cannot find path 'C:\note\res\g3_3_31_2025_2_38_21_PM.png' because it does not exist.
+    Move-Item: C:\Users\karlr\OneDrive\Documents\WindowsPowerShell\Scripts\PsMarkdown\script\Link.ps1:672
+    Line |
+     672 |          Move-Item `
+         |          ~~~~~~~~~~~
+         | Cannot find path 'C:\note\res\Minecraft_Launcher_3_31_2025_2_27_37_PM.png' because it does not exist.
+    
+    FilePath   : C:\note\emp\journal\journal_-_2025-03-31_demo_MinecraftMassLogin.md
+    LineNumber :
+    Old        :
+    New        :
+    ```
+
+    None of the locals appear to be broken
+
 - [x] 2025-02-22-005302
   - where: ``PsMarkdown#ClipImage#Save-...``
   - howto
